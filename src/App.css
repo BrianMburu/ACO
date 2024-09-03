@@ -1,0 +1,42 @@
+#root {
+  margin: 0 auto;
+}
+
+.dark #root {
+  background-color: black;
+}
+
+.light #root {
+  background-color: rgb(17 24 39);
+}
+
+.logo {
+  height: 2.3em;
+  /* padding: 1.5em; */
+  will-change: filter;
+  transition: filter 300ms;
+}
+
+.logo:hover,
+.activity-icon-container:hover {
+  /* filter: drop-shadow(0 0 2em #646cffaa); */
+  filter: drop-shadow(0 0 2em #129a73);
+}
+
+@media (max-width: 768px) {
+  .sidebar-icon span {
+    display: none;
+  }
+
+  .sidebar-icon .tooltip-text {
+    display: none;
+  }
+
+  .w-64 {
+    width: 100%;
+  }
+
+  .navbar input {
+    width: 100%;
+  }
+}
