@@ -1,8 +1,16 @@
 import { useState, useEffect } from 'react'
 import './App.css'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
 import Sidebar from './components/sidebar/Sidebar';
 import Navbar from './components/navbar/Navbar';
+import Home from './components/pages/home/Home';
+import AppsPage from './components/pages/apps/AppsPage';
+import AoClimaOptions from './components/pages/climaOptions/AoClimaOptions';
+import AoWeatherAgent from './components/pages/weatherAgent/AoWeatherAgent';
+import WalletPage from './components/pages/wallet/WalletPage';
+import TradesAnalysisPage from './components/pages/trades/TradesAnalysisPage';
+
 
 const App: React.FC = () => {
   const [theme, setTheme] = useState("");
@@ -34,16 +42,18 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div className="flex h-screen">
+      <div className="flex max-h-full h-screen">
         <Sidebar theme={theme} updateTheme={setTheme} activeIndex={activeIndex} updateActiveIndex={setActiveIndex} />
         <div className="flex-grow">
           <Navbar theme={theme} />
           {/* Pages Content go here */}
           <Routes>
-            <Route path="/" element={<div className="p-6"><h1 className='h1'>Home Page</h1></div>} />
-            <Route path="apps" element={<div className="p-6"><h1 className='h1'>Applications Page</h1></div>} />
-            <Route path="analysis" element={<div className="p-6"><h1 className='h1'>analysis Page</h1></div>} />
-            <Route path="wallet" element={<div className="p-6"><h1 className='h1'>Wallet Page</h1></div>} />
+            <Route path="/" element={< Home />} />
+            <Route path="apps" element={<AppsPage />} />
+            <Route path="analysis" element={<TradesAnalysisPage />} />
+            <Route path="wallet" element={<WalletPage />} />
+            <Route path="aoclimaoptions" element={<AoClimaOptions />} />
+            <Route path="aoweatheragent" element={<AoWeatherAgent />} />
           </Routes>
         </div>
       </div>

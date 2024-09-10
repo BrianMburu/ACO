@@ -38,14 +38,14 @@ const Sidebar: React.FC<SidebarBarProps> = ({ theme, updateTheme, activeIndex, u
     ];
 
     return (
-        <div className={classNames("h-screen flex flex-col justify-between bg-black- text-white shadow-lg border-r border-r-neutral-700 transition-all duration-300", {
+        <div className={classNames("h-screen flex flex-col justify-between text-white shadow-lg border-r border-r-neutral-700 transition-all duration-300", {
             'w-20 bg-black': isCollapsed && theme === 'dark',
             'w-40 bg-black': !isCollapsed && theme === 'dark',
             'w-20 bg-gray-900': isCollapsed && theme === 'light',
             'w-40 bg-gray-900': !isCollapsed && theme === 'light',
         })}>
             <div>
-                <div className="p-5 flex items-center justify-center">
+                <div className="pt-4 pb-4 pl-3 pr-3 flex items-center justify-center">
                     <img className="logo" src='Aco-logo.svg' alt='ACO logo' />
 
                     {/* <button onClick={handleCollapseToggle} className="p-2">
