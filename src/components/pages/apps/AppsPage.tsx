@@ -101,7 +101,7 @@ const AppsPage: React.FC = () => {
 
     return (
         <div className={classNames("content text-black dark:text-white flex flex-col")}>
-            <div className="grid grid-cols-1 p-8 pt-0 lg:grid-cols-3 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 p-8 lg:grid-cols-3 md:grid-cols-2 gap-6">
                 {/* First Card - Temperature Graph */}
                 <div className="shadow-lg rounded-lg p-6 border border-neutral-700" style={{
                     background: 'linear-gradient(to top left, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0))'

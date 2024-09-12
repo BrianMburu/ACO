@@ -331,7 +331,7 @@ const WalletPage: React.FC = (() => {
                         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                             <span className="text-gray-500 sm:text-sm">$</span>
                         </div>
-                        <input type="number" name="betAmount" id="amount" className="w-full block rounded-md border-0 py-1.5 pl-7 text-gray-900 ring-1 ring-inset ring-gray-300 
+                        <input type="number" name="depositAmount" id="amount" className="w-full block rounded-md border-0 py-1.5 pl-7 text-gray-900 ring-1 ring-inset ring-gray-300 
                                 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="USDA Amount"
                             value={depositAmount} onChange={handleInputChange}>
                         </input>
@@ -349,7 +349,7 @@ const WalletPage: React.FC = (() => {
                         <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                             <span className="text-gray-500 sm:text-sm">$</span>
                         </div>
-                        <input type="number" name="betAmount" id="amount" className="w-full block rounded-md border-0 py-1.5 pl-7 text-gray-900 ring-1 ring-inset ring-gray-300 
+                        <input type="number" name="withdrawAmount" id="amount" className="w-full block rounded-md border-0 py-1.5 pl-7 text-gray-900 ring-1 ring-inset ring-gray-300 
                                 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="USDA Amount"
                             value={withdrawAmount} onChange={handleInputChange}>
                         </input>

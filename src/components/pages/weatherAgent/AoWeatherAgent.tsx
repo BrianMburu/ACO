@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
+import * as L from 'leaflet';
 import { MapContainer, TileLayer, useMapEvents, Marker, Popup } from 'react-leaflet';
 
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import { PermissionType } from "arconnect";
 import axios from "axios";
 
+import OverviewSection from "../walletOverview/WalletOverview"
 interface Tag {
     name: string;
     value: string;
@@ -79,6 +81,7 @@ const aoWeatherAgent: React.FC = () => {
     const [forecastData, setForecastData] = useState(null);
     const [historicalData, setHistoricalData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [address, setAddress] = useState("");
     const [aocBalance, setAocBalance] = useState(0);
     const [latitude, setLatitude] = useState<number | null>(null);
     const [longitude, setLongitude] = useState<number | null>(null);
@@ -236,46 +239,51 @@ const aoWeatherAgent: React.FC = () => {
     }, []);
 
     return (
-        <div className="content p-8 text-black dark:text-white">
-            <div className="relative rounded-lg overflow-hidden">
-                {/* Leaflet Map */}
-                <MapContainer
-                    style={{ height: '400px', width: '100%' }}
-                    center={[lat!, lng!]}
-                    zoom={1}
-                    scrollWheelZoom={true}>
-                    <TileLayer
-                        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"//url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'//attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    />
-                    <Marker position={[lat!, lng!]}>
-                        <Popup>
-                            Lat: {lat}, Lng: {lng}
-                        </Popup>
-                    </Marker>
-                    <MapClickHandler />
-                </MapContainer>
-            </div>
+        <div className="content text-black dark:text-white">
+            {/* Add the new Overview Section */}
+            <OverviewSection wallet={address} aocBalance={aocBalance} />
 
-            <div className="mt-8 max-w-1/2">
-                <div className="mb-5">
-                    <textarea id="message" rows={4} className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 
+            <div className="p-8">
+                <div className="relative rounded-lg overflow-hidden">
+                    {/* Leaflet Map */}
+                    <MapContainer
+                        style={{ height: '400px', width: '100%' }}
+                        center={[lat!, lng!]}
+                        zoom={1}
+                        scrollWheelZoom={true}>
+                        <TileLayer
+                            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"//url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'//attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                        />
+                        <Marker position={[lat!, lng!]}>
+                            <Popup>
+                                Lat: {lat}, Lng: {lng}
+                            </Popup>
+                        </Marker>
+                        <MapClickHandler />
+                    </MapContainer>
+                </div>
+
+                <div className="mt-8 max-w-1/2">
+                    <div className="mb-5">
+                        <textarea id="message" rows={4} className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 
                     focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 
                     dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        placeholder="Write your plans today ..."
-                        value={activities}
-                        onChange={(e) => setActivities(e.target.value)}></textarea>
-                </div>
+                            placeholder="Write your plans today ..."
+                            value={activities}
+                            onChange={(e) => setActivities(e.target.value)}></textarea>
+                    </div>
 
-                <div className="p-5 border border-gray-700 flex justify-center mb-5">
-                    <h1>Disclaimer!</h1>
-                    <p>AO Weather Agent is still in development. Use with caution.</p>
-                </div>
-                <div className="flex justify-center">
-                    <button className="top-3 w-1/2 left-3 bg-green-500 text-white px-3 py-2 rounded-md opacity-80 hover:opacity-100"
-                        onClick={handleCheck}>
-                        submit
-                    </button>
+                    <div className="p-5 border border-gray-700 flex justify-center mb-5">
+                        <h1>Disclaimer!</h1>
+                        <p>AO Weather Agent is still in development. Use with caution.</p>
+                    </div>
+                    <div className="flex justify-center">
+                        <button className="top-3 w-1/2 left-3 bg-green-500 text-white px-3 py-2 rounded-md opacity-80 hover:opacity-100"
+                            onClick={handleCheck}>
+                            submit
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
