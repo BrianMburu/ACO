@@ -9,12 +9,61 @@ import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
 
 import 'leaflet-control-geocoder/dist/Control.Geocoder.js';
-import Select from 'react-select';
+import Select, { ActionMeta, MultiValue } from 'react-select';
 
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import { PermissionType } from "arconnect";
+import { FaWallet } from 'react-icons/fa';
 import useCronTick from "../utils/useCronTick";
 
+const OverviewSection: React.FC<{ aocBalance: number, wallet: string }> = ({ aocBalance, wallet }) => {
+    return (
+        <div className="w-full text-white p-6 mb-8 flex flex-wrap justify-between items-center shadow-lg border-b border-b-neutral-700">
+            {/* Left Section - Wallet Info */}
+            <div className="flex items-start space-x-4">
+                <div className='p-2 bg-neutral-700 rounded-full'>
+                    <FaWallet size="15" />
+                </div>
+                <div className='items-start'>
+                    <p className="text-gray-400 text-sm">Your Wallet / Balance</p>
+                    <div className="flex items-baseline space-x-2">
+                        <h2 className="text-3xl font-semibold">{wallet != "" ? wallet : "0x760"}</h2>
+                        <span className="text-green-400 text-3xl font-bold">/Aoc {aocBalance}</span>
+                    </div>
+                    {/* <p className="text-gray-400 text-sm">You Take 7.46% Less Than (Past 2 Months)</p> */}
+                </div>
+            </div>
+
+            {/* Center Section - Market or Weather Info */}
+            <div className="flex flex-col space-y-3 items-start">
+                <div className='flex space-x-4'>
+                    <div className="text-start text-sm">
+                        <p className="text-gray-400">Location</p>
+                        <h3 className="text-xs font-semibold ">New York</h3>
+                    </div>
+                    <div className="text-start text-sm">
+                        <p className="text-gray-400">Market Cap</p>
+                        <h3 className="text-xs font-semibold">$843,333,177,777</h3>
+                    </div>
+                    <div className="text-start text-sm">
+                        <p className="text-gray-400">Volume (24h)</p>
+                        <h3 className="text-xs font-semibold">$29,940,488,608</h3>
+                    </div>
+                </div>
+
+                {/* Dropdown for selecting weather options */}
+                {/* <div>
+                    <select className="bg-neutral-800 text-white text-sm p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                        onChange={(event) => { updateWeatherOption(event.target.value) }}
+                    >
+                        <option className='text-xs' value="temperature">Temperature (°C)</option>
+                        <option className='text-xs' value="rainfall">Rainfall (mm)</option>
+                    </select>
+                </div> */}
+            </div>
+        </div>
+    );
+};
 
 const AoClimaOptions: React.FC = () => {
     const AOC = "6XvODi4DHKQh1ebBugfyVIXuaHUE5SKEaK1-JbhkMfs";
@@ -26,7 +75,7 @@ const AoClimaOptions: React.FC = () => {
     // State to store latitude, longitude, and location
     const [lat, setLat] = useState<number | null>(40.7128);
     const [lng, setLng] = useState<number | null>(-74.0060);
-    const [location, setLocation] = useState<string | null>('New York, NY');
+    const [mapLocation, setMapLocation] = useState<string | null>('New York, NY');
 
 
     const [weatherData, setWeatherData] = React.useState<WeatherDataProps | null>(
@@ -51,12 +100,12 @@ const AoClimaOptions: React.FC = () => {
     useEffect(() => {
         const storedLat = localStorage.getItem('lat');
         const storedLng = localStorage.getItem('lng');
-        const storedLocation = localStorage.getItem('location');
+        const storedMapLocation = localStorage.getItem('location');
 
-        if (storedLat !== null && storedLng !== null && storedLocation !== null) {
+        if (storedLat !== null && storedLng !== null && storedMapLocation !== null) {
             setLat(Number(storedLat));
             setLng(Number(storedLng));
-            setLocation(storedLocation);
+            setMapLocation(storedMapLocation);
         }
 
     }, []);
@@ -71,6 +120,10 @@ const AoClimaOptions: React.FC = () => {
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = event.target;
         setBetAmount(value)
+    };
+
+    const handleSelectChange = (newValue: MultiValue<any>, actionMeta: ActionMeta<any>) => {
+        setSelectedOptions([...newValue]);
     };
 
     // const fetchCurrentWeather = React.useCallback(
@@ -94,7 +147,6 @@ const AoClimaOptions: React.FC = () => {
         return { currentWeatherData };
     };
 
-
     const fetchWeatherData = async (city: string) => {
         const url = `${api_Endpoint}weather?q=${city}&appid=${api_key}&units=metric`;
         const searchResponse = await axios.get(url);
@@ -113,7 +165,7 @@ const AoClimaOptions: React.FC = () => {
     //     setWeatherData(currentWeatherData);
     // };
 
-    function reloadPage(forceReload: boolean = false): void {
+    function reloadPage(forceReload = false): void {
         if (forceReload) {
             // Force reload from the server
             location.href = location.href;
@@ -147,7 +199,7 @@ const AoClimaOptions: React.FC = () => {
             click(e: L.LeafletMouseEvent) {
                 setLat(e.latlng.lat);
                 setLng(e.latlng.lng);
-                setLocation(`Lat: ${e.latlng.lat}, Lng: ${e.latlng.lng}`);
+                setMapLocation(`Lat: ${e.latlng.lat}, Lng: ${e.latlng.lng}`);
 
                 // Update the local storage
                 localStorage.setItem('lat', e.latlng.lat.toString());
@@ -367,6 +419,9 @@ const AoClimaOptions: React.FC = () => {
 
     return (
         <div className={classNames("content p-8 text-black dark:text-white")}>
+            {/* Add the new Overview Section */}
+            <OverviewSection wallet={address} aocBalance={aocBalance} />
+
             {/* Map and Call/Put buttons */}
             <div className="relative rounded-lg overflow-hidden">
                 {/* Leaflet Map */}
@@ -403,7 +458,7 @@ const AoClimaOptions: React.FC = () => {
                     isMulti
                     options={weatherOptions}
                     defaultValue={selectedOptions}
-                    onChange={setSelectedOptions}
+                    onChange={handleSelectChange}
                     className="text-white bg-gray-900 dark:bg-black dark:text-white"
                     placeholder="Select weather metrics..."
                 />

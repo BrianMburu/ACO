@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Line } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -14,7 +14,7 @@ import {
     ChartData
 } from 'chart.js';
 import classNames from 'classnames';
-import { FaWallet, FaRobot } from 'react-icons/fa';
+import { FaRobot } from 'react-icons/fa';
 import { CubeTransparentIcon } from '@heroicons/react/24/solid';
 import { useNavigate } from 'react-router-dom';
 
@@ -95,90 +95,23 @@ const temperatureData: ChartData<'line'> = {
     }],
 };
 
-// Chart data for rainfall
-const rainfallData: ChartData<'line'> = {
-    labels: sampleData.map(data => data.month),
-    datasets: [{
-        label: 'Rainfall (mm)',
-        data: sampleData.map(data => data.rainfall),
-        backgroundColor: 'transparent',//'rgba(135, 206, 250, 0.2)', // Light sky blue fill
-        borderColor: 'rgba(135, 206, 250, 1)', // Sky blue border
-        fill: true,
-    }],
-};
-
-
-const OverviewSection: React.FC<{ updateWeatherOption: (option: string) => void }> = ({ updateWeatherOption }) => {
-    return (
-        <div className="w-full text-white p-6 mb-8 flex flex-wrap justify-between items-center shadow-lg border-b border-b-neutral-700">
-            {/* Left Section - Wallet Info */}
-            <div className="flex items-start space-x-4">
-                <div className='p-2 bg-neutral-700 rounded-full'>
-                    <FaWallet size="15" />
-                </div>
-                <div className='items-start'>
-                    <p className="text-gray-400 text-sm">Your Wallet / Balance</p>
-                    <div className="flex items-baseline space-x-2">
-                        <h2 className="text-3xl font-semibold">0x760</h2>
-                        <span className="text-green-400 text-3xl font-bold">/$47.590</span>
-                    </div>
-                    {/* <p className="text-gray-400 text-sm">You Take 7.46% Less Than (Past 2 Months)</p> */}
-                </div>
-            </div>
-
-            {/* Center Section - Market or Weather Info */}
-            <div className="flex flex-col space-y-3 items-start">
-                <div className='flex space-x-4'>
-                    <div className="text-start text-sm">
-                        <p className="text-gray-400">Location</p>
-                        <h3 className="text-xs font-semibold ">New York</h3>
-                    </div>
-                    <div className="text-start text-sm">
-                        <p className="text-gray-400">Market Cap</p>
-                        <h3 className="text-xs font-semibold">$843,333,177,777</h3>
-                    </div>
-                    <div className="text-start text-sm">
-                        <p className="text-gray-400">Volume (24h)</p>
-                        <h3 className="text-xs font-semibold">$29,940,488,608</h3>
-                    </div>
-                </div>
-
-                {/* Dropdown for selecting weather options */}
-                {/* <div>
-                    <select className="bg-neutral-800 text-white text-sm p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-                        onChange={(event) => { updateWeatherOption(event.target.value) }}
-                    >
-                        <option className='text-xs' value="temperature">Temperature (°C)</option>
-                        <option className='text-xs' value="rainfall">Rainfall (mm)</option>
-                    </select>
-                </div> */}
-            </div>
-        </div>
-    );
-};
 
 const AppsPage: React.FC = () => {
-    const [weatherElement, setWeatherElement] = useState("temperature")
     const navigate = useNavigate();
 
     return (
         <div className={classNames("content text-black dark:text-white flex flex-col")}>
-            {/* Add the new Overview Section */}
-            <OverviewSection updateWeatherOption={setWeatherElement} />
-
             <div className="grid grid-cols-1 p-8 pt-0 lg:grid-cols-3 md:grid-cols-2 gap-6">
                 {/* First Card - Temperature Graph */}
                 <div className="shadow-lg rounded-lg p-6 border border-neutral-700" style={{
-                    background: weatherElement == "temperature" ?
-                        'linear-gradient(to top left, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0))' :
-                        'linear-gradient(to top left, rgba(135, 206, 250, 0.2), rgba(135, 206, 250, 0))'
+                    background: 'linear-gradient(to top left, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0))'
                 }}>
 
                     <div className='mb-4 flex justify-between'>
                         <div>
                             <h2 className="text-xl font-semibold mb-1">AoClimaOptions</h2>
                             <h6 className='text-xs text-gray-700 dark:text-gray-400'>
-                                {weatherElement == "temperature" ? "Temparature Overview" : "Rainfall Overview"}
+                                {"Temparature Overview"}
                             </h6>
                         </div>
                         <div className='rounded-full p-3 bg-gradient-to-b from-neutral-700 to-transparent'>
@@ -191,7 +124,7 @@ const AppsPage: React.FC = () => {
                         <div className='cursor-pointer '>Yearly</div>
                     </div>
                     <div className="h-64 lg:h-auto md:h-auto">
-                        <Line data={weatherElement == "temperature" ? temperatureData : rainfallData}
+                        <Line data={temperatureData}
                             options={chartOptions} />
                     </div>
                     <div className="mt-4 flex justify-between">

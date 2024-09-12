@@ -151,6 +151,7 @@ const TradesAnalysisPage: React.FC = (() => {
                             City: typedDetails.City,
                             CurrentTemp: typedDetails.CurrentTemp,
                             ContractStatus: typedDetails.ContractStatus,
+                            CountryId: typedDetails.CountryId,
                             TradeId: typedDetails.TradeId,
                             ClosingTime: typedDetails.ClosingTime
                                 ? new Date(typedDetails.ClosingTime).toLocaleString("en-US", {
