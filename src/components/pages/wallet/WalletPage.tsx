@@ -54,7 +54,7 @@ const WalletPage: React.FC = (() => {
     const [sendSuccess, setSuccess] = useState(false);
     const [transactionlist, setTransactionDetails] = useState<Transaction[]>([]);
 
-    function reloadPage(forceReload: boolean = false): void {
+    function reloadPage(forceReload = false): void {
         if (forceReload) {
             // Force reload from the server
             location.href = location.href;
@@ -69,9 +69,9 @@ const WalletPage: React.FC = (() => {
 
         // Function to handle the swap and set success state
         const send = async (): Promise<void> => {
-            var value = parseInt(depositAmount);
-            var units = value * 1000000000000;
-            var credUnits = units.toString();
+            const value = parseInt(depositAmount);
+            const units = value * 1000000000000;
+            const credUnits = units.toString();
             try {
                 const getSwapMessage = await message({
                     process: USDA,
@@ -83,7 +83,7 @@ const WalletPage: React.FC = (() => {
                     signer: createDataItemSigner(window.arweaveWallet),
                 });
 
-                let { Messages, Error } = await result({
+                const { Messages, Error } = await result({
                     message: getSwapMessage,
                     process: USDA,
                 });
@@ -102,7 +102,7 @@ const WalletPage: React.FC = (() => {
                     setSuccess(true);
                 }
             } catch (error) {
-                alert("There was an error sending USDA: " + error);
+                alert("There was an error sending USDA: " + error?.toString());
                 throw error;
             }
         };
@@ -123,7 +123,7 @@ const WalletPage: React.FC = (() => {
                 signer: createDataItemSigner(window.arweaveWallet),
             });
 
-            let { Messages, Error } = await result({
+            const { Messages, Error } = await result({
                 message: getPropMessage,
                 process: AOC,
             });
@@ -147,9 +147,9 @@ const WalletPage: React.FC = (() => {
 
     const withdraw = async () => {
         setIsLoadingWithdraw(true);
-        var value = parseInt(withdrawAmount);
-        var units = value * 1000000000000;
-        var credUnits = units.toString();
+        const value = parseInt(withdrawAmount);
+        const units = value * 1000000000000;
+        const credUnits = units.toString();
         try {
             // Proceed with creating the trade only if send was successful
             const getPropMessage = await message({
@@ -164,7 +164,7 @@ const WalletPage: React.FC = (() => {
                 signer: createDataItemSigner(window.arweaveWallet),
             });
 
-            let { Messages, Error } = await result({
+            const { Messages, Error } = await result({
                 message: getPropMessage,
                 process: AOC,
             });
@@ -195,7 +195,7 @@ const WalletPage: React.FC = (() => {
                 });
                 const getBalanceMessage = messageResponse;
                 try {
-                    let { Messages, Error } = await result({
+                    const { Messages, Error } = await result({
                         message: getBalanceMessage,
                         process,
                     });
@@ -236,7 +236,7 @@ const WalletPage: React.FC = (() => {
                 });
                 const getBalanceMessage = messageResponse;
                 try {
-                    let { Messages, Error } = await result({
+                    const { Messages, Error } = await result({
                         message: getBalanceMessage,
                         process,
                     });
@@ -277,7 +277,7 @@ const WalletPage: React.FC = (() => {
                 });
                 const getProposalsMessage = messageResponse;
                 try {
-                    let { Messages, Error } = await result({
+                    const { Messages, Error } = await result({
                         message: getProposalsMessage,
                         process: AOC,
                     });
@@ -295,9 +295,9 @@ const WalletPage: React.FC = (() => {
                         return {
                             user: typedDetails.user,
                             transactionid: typedDetails.transactionid,
-                            amount: typedDetails.amount / 1000000000000,
+                            amount: String(Number(typedDetails.amount) / 1000000000000),
                             type: typedDetails.type,
-                            balance: typedDetails.balance / 1000000000000,
+                            balance: String(Number(typedDetails.balance) / 1000000000000),
                             timestamp: new Date(typedDetails.timestamp).toLocaleString(
                                 "en-US",
                                 {
@@ -319,6 +319,7 @@ const WalletPage: React.FC = (() => {
                 console.error(error);
             }
         };
+
         fetchTransactions();
     }, []);
 
