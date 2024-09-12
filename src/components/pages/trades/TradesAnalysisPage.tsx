@@ -5,6 +5,23 @@ import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import { PermissionType } from "arconnect";
 
 const TradesTable: React.FC<{ trades: any, tabletype: string }> = ({ trades, tabletype }) => {
+    interface Trade {
+        UserId: string;
+        TradeId: number;
+        BetAmount: number;
+        ContractType: string;
+        Outcome: string;
+        Country: string;
+        CurrentTemp: string;
+        ContractStatus: string;
+        CountryId: string;
+        ContractExpiry: string;
+        CreatedTime: string;
+        ClosingTemp: number;
+        ClosingTime: string;
+        Payout: number;
+        City: string;
+    }
     return (
         <div className='w-full p-8 border border-neutral-700 rounded-lg mb-8' style={{
             background: tabletype === "open" ?
@@ -28,7 +45,7 @@ const TradesTable: React.FC<{ trades: any, tabletype: string }> = ({ trades, tab
                     <div className='table-cell text-left border border-neutral-700 p-3 rounded-tr-md'>Outcome</div>
                 </div>
                 <div className='table-row-group'>
-                    {trades.map((trade, index) => (
+                    {trades.map((trade: Trade, index: number) => (
                         <div className='table-row' key={index}>
                             <div className='table-cell text-left border border-neutral-700 p-3'>{trade.UserId}</div>
                             <div className='table-cell text-left border border-neutral-700 p-3'>{trade.Country}</div>
