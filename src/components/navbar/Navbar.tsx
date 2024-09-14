@@ -2,8 +2,20 @@ import React from 'react';
 import { FaBell, FaAngleDoubleRight } from 'react-icons/fa';
 import { SparklesIcon } from '@heroicons/react/24/solid';
 import classNames from 'classnames';
+import { useLocation } from 'react-router-dom';
+
 
 const Navbar: React.FC<{ theme: string }> = ({ theme }) => {
+    const location = useLocation();
+    const { pathname } = location;
+
+    // Capitalize the first letter
+    const capitalizeFirstLetter = (text: string) => {
+        return text.charAt(0).toUpperCase() + text.slice(1);
+    };
+
+    // Remove the leading slash
+    const cleanPathname = pathname.startsWith('/') ? pathname.slice(1) : pathname;
     return (
         <nav className={classNames("flex items-center justify-between p-4 shadow-md border-b border-b-neutral-700 transition-all duration-300", {
             'bg-black': theme == 'dark',
@@ -14,7 +26,7 @@ const Navbar: React.FC<{ theme: string }> = ({ theme }) => {
                     <SparklesIcon className='size-5' />
                 </div>
                 <FaAngleDoubleRight className="size-3" />
-                <div className="text-xl font-bold text-white">Overview</div>
+                <div className="text-xl font-bold text-white">{cleanPathname !== "" ? capitalizeFirstLetter(cleanPathname) : "Overview"}</div>
             </div>
             <div className="flex items-center space-x-4">
                 <div className="text-white">ArConnect</div>
