@@ -14,7 +14,7 @@ const OverviewSection: React.FC<{ aocBalance: number, wallet: string }> = ({ aoc
                 <div className='items-start'>
                     <p className="text-gray-400 text-sm">Your Wallet / Balance</p>
                     <div className="flex items-baseline space-x-2">
-                        <h2 className="text-3xl font-semibold">{wallet != "" ? wallet : "0x760"}</h2>
+                        <h2 className="text-3xl font-semibold">{wallet != "" ? wallet.substring(0, 5) : "0x760"}</h2>
                         <span className="text-green-400 text-3xl font-bold">/Aoc {aocBalance}</span>
                     </div>
                     {/* <p className="text-gray-400 text-sm">You Take 7.46% Less Than (Past 2 Months)</p> */}
