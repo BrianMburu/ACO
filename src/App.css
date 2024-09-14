@@ -11,19 +11,16 @@
 }
 
 .logo {
-  height: 3em;
+  height: 2.3em;
   /* padding: 1.5em; */
   will-change: filter;
   transition: filter 300ms;
 }
 
-.logo:hover {
-  /* filter: drop-shadow(0 0 2em #646cffaa); */
-  filter: drop-shadow(0 0 1.2em #575c1b);
-}
-
+.logo:hover,
 .activity-icon-container:hover {
-  filter: drop-shadow(0 0 1.2em #129a73);
+  /* filter: drop-shadow(0 0 2em #646cffaa); */
+  filter: drop-shadow(0 0 2em #129a73);
 }
 
 @media (max-width: 768px) {
@@ -43,15 +40,3 @@
     width: 100%;
   }
 }
-<<<<<<< HEAD
-=======
-
-/* Content */
-.content {
-  height: calc(100% - 78px);
-  width: calc(100%);
-  overflow-y: scroll;
-}
-
-/* End Content */
->>>>>>> fb5d98a24be9068ceb2066870fccd70161fe556f
