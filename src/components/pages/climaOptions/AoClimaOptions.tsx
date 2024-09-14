@@ -2,20 +2,122 @@ import React, { useState, useEffect } from 'react';
 import axios from "axios";
 
 import 'leaflet/dist/leaflet.css';
-import { MapContainer, TileLayer, useMapEvents, Marker, Popup } from 'react-leaflet';
-import * as L from 'leaflet';
+import L from 'leaflet';
+import { MapContainer, TileLayer, useMapEvents, Marker, Popup, useMap } from 'react-leaflet';
+import { GeoSearchControl, OpenStreetMapProvider, SearchControl } from 'leaflet-geosearch';
+import 'leaflet-geosearch/dist/geosearch.css';
 import classNames from 'classnames';
 import { Line } from 'react-chartjs-2';
 import 'chart.js/auto';
-
 import Select, { ActionMeta, MultiValue } from 'react-select';
-
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
+
 import { PermissionType } from "arconnect";
 import useCronTick from "../utils/useCronTick";
-
 import OverviewSection from "../walletOverview/WalletOverview"
 
+const SearchField: React.FC<{
+    provider: OpenStreetMapProvider,
+    setLat: (num: number) => void,
+    setLng: (num: number) => void
+}> = ({ provider, setLat, setLng }) => {
+    const searchControl = GeoSearchControl({
+        provider,
+        style: 'bar',
+        marker: L.Marker,
+        showMarker: true,
+        retainZoomLevel: false,
+        animateZoom: true,
+        autoClose: true,
+        searchLabel: 'Search for a city...',
+        keepResult: false,
+        position: 'topleft'
+    });
+
+    const map = useMap();
+
+    useEffect(() => {
+        map.addControl(searchControl);
+
+        map.on('geosearch/showlocation', (result: any) => {
+            const { x, y } = result.location;
+            setLat(Number(y));
+            setLng(Number(x));
+
+            console.log('lon', x, 'lat', y)
+
+            // Update the local storage
+            localStorage.setItem('lat', Number(y).toString());
+            localStorage.setItem('lng', Number(x).toString());
+            // localStorage.setItem('location', `Lat: ${e.latlng.lat}, Lng: ${e.latlng.lng}`);
+            map.flyTo([y, x], 10, { animate: true, duration: 1 }); // Adjust the zoom level as needed
+        });
+
+        return () => {
+            map.removeControl(searchControl);
+            map.off('geosearch/showlocation');
+        };
+    }, []);
+
+    return null;
+}
+
+const Map: React.FC<{
+    lat: number, lng: number,
+    setLat: (num: number) => void,
+    setLng: (num: number) => void
+}> = ({ lat, lng, setLat, setLng }) => {
+    const provider = new OpenStreetMapProvider();
+
+    // Custom map handler to get clicked position
+    const MapClickHandler: React.FC = () => {
+        useMapEvents({
+            click(e: L.LeafletMouseEvent) {
+                setLat(e.latlng.lat);
+                setLng(e.latlng.lng);
+                // setMapLocation(`Lat: ${e.latlng.lat}, Lng: ${e.latlng.lng}`);
+
+                // Update the local storage
+                localStorage.setItem('lat', e.latlng.lat.toString());
+                localStorage.setItem('lng', e.latlng.lng.toString());
+                localStorage.setItem('location', `Lat: ${e.latlng.lat}, Lng: ${e.latlng.lng}`);
+
+                // Fly to the clicked coordinates
+                e.target.flyTo([e.latlng.lat, e.latlng.lng], 10, {
+                    animate: true,
+                    duration: 1 // duration in seconds
+                });
+            },
+        });
+        return null;
+    };
+
+    return (
+        <>
+            {/* Leaflet Map */}
+            <MapContainer
+                style={{ height: '50vh', width: '100%' }}
+                center={[lat, lng]}
+                zoom={5}
+                scrollWheelZoom={true}>
+                <TileLayer
+                    url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"//url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'//attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                />
+                <Marker position={[lat, lng]}>
+                    <Popup>
+                        Lat: {lat}, Lng: {lng}
+                    </Popup>
+                </Marker>
+
+                <SearchField provider={provider} setLat={setLat} setLng={setLng} />
+
+                <MapClickHandler />
+            </MapContainer>
+        </>
+    )
+
+}
 
 const AoClimaOptions: React.FC = () => {
     const AOC = "6XvODi4DHKQh1ebBugfyVIXuaHUE5SKEaK1-JbhkMfs";
@@ -145,29 +247,6 @@ const AoClimaOptions: React.FC = () => {
         };
     }
 
-    // Custom map handler to get clicked position
-    const MapClickHandler: React.FC = () => {
-        useMapEvents({
-            click(e: L.LeafletMouseEvent) {
-                setLat(e.latlng.lat);
-                setLng(e.latlng.lng);
-                setMapLocation(`Lat: ${e.latlng.lat}, Lng: ${e.latlng.lng}`);
-
-                // Update the local storage
-                localStorage.setItem('lat', e.latlng.lat.toString());
-                localStorage.setItem('lng', e.latlng.lng.toString());
-                localStorage.setItem('location', `Lat: ${e.latlng.lat}, Lng: ${e.latlng.lng}`);
-
-                // Fly to the clicked coordinates
-                e.target.flyTo([e.latlng.lat, e.latlng.lng], 5, {
-                    animate: true,
-                    duration: 1 // duration in seconds
-                });
-            },
-        });
-        return null;
-    };
-
     // Multiselect options for the chart
     const weatherOptions = [
         { value: 'temp', label: 'Temperature' },
@@ -179,9 +258,14 @@ const AoClimaOptions: React.FC = () => {
     ];
 
     // Example data for the chart
+    interface Option {
+        label: string,
+        value: string
+    }
+
     const chartData = {
         labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
-        datasets: selectedOptions.map(option => {
+        datasets: selectedOptions.map((option: Option) => {
             let data: number[];
             let color;
             switch (option.value) {
@@ -233,7 +317,7 @@ const AoClimaOptions: React.FC = () => {
             },
             y: {
                 ticks: {
-                    display: false
+                    display: true,
                 },
                 border: {
                     display: false
@@ -241,6 +325,7 @@ const AoClimaOptions: React.FC = () => {
                 grid: {
                     display: true,
                 },
+                position: 'right',
             },
         },
         plugins: {
@@ -374,26 +459,13 @@ const AoClimaOptions: React.FC = () => {
             {/* Add the new Overview Section */}
             <OverviewSection wallet={address} aocBalance={aocBalance} />
 
-            <div className="p-8">
+            <div className="p-8 pt-0">
+                <div className="pb-4 text-xl font-semibold text-white">
+                    <h2>Select Location to Predict from the Map:</h2>
+                </div>
                 {/* Map and Call/Put buttons */}
                 <div className="relative rounded-lg overflow-hidden">
-                    {/* Leaflet Map */}
-                    <MapContainer
-                        style={{ height: '400px', width: '100%' }}
-                        center={[lat!, lng!]}
-                        zoom={1}
-                        scrollWheelZoom={true}>
-                        <TileLayer
-                            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"//url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'//attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        />
-                        <Marker position={[lat!, lng!]}>
-                            <Popup>
-                                Lat: {lat}, Lng: {lng}
-                            </Popup>
-                        </Marker>
-                        <MapClickHandler />
-                    </MapContainer>
+                    <Map lat={lat!} lng={lng!} setLat={setLat} setLng={setLng} />
                 </div>
 
                 {/* Show clicked location */}
@@ -405,14 +477,14 @@ const AoClimaOptions: React.FC = () => {
             )} */}
 
                 {/* Multiselect Input for the Chart */}
-                <div className="mt-8">
-                    <label className="block mb-2 font-semibold">Select Weather Data:</label>
+                <div className="mt-8 weather-options">
+                    <label className="block mb-2 text-xl text-white font-semibold">Select Weather Data:</label>
                     <Select
                         isMulti
                         options={weatherOptions}
                         defaultValue={selectedOptions}
                         onChange={handleSelectChange}
-                        className="text-white bg-gray-900 dark:bg-black dark:text-white"
+                        className="bg-gray-900 dark:bg-black text-black dark:text-white"
                         placeholder="Select weather metrics..."
                     />
                 </div>
@@ -420,7 +492,7 @@ const AoClimaOptions: React.FC = () => {
 
                 {/* Graph Section */}
                 <div className="overflow-x-auto mt-8">
-                    <div className="min-w-full shadow-lg p-6 bg-gradient-to-tl rounded-lg"
+                    <div className="h-500px w-full shadow-lg p-6 bg-gradient-to-tl rounded-lg"
                         style={{ background: 'linear-gradient(to top left, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0))' }}>
                         {/* <h2 className="text-xl font-semibold mb-4">Weather Analysis</h2> */}
                         {/* Call and Put buttons */}
@@ -435,17 +507,17 @@ const AoClimaOptions: React.FC = () => {
                                 </input>
                             </div>
                             <div className='flex space-x-3 justify-center'>
-                                <button className="top-3 w-1/2 left-3 bg-green-500 text-white px-3 py-2 rounded-md opacity-80 hover:opacity-100"
+                                <button className="top-3 w-1/2 left-3 bg-green-500 text-white lg:text-sm px-3 py-2 rounded-md opacity-80 hover:opacity-100"
                                     onClick={() => trade("Call")}>
                                     Buy Higher
                                 </button>
-                                <button className="top-3 w-1/2 left-20 bg-red-500 text-white px-3 py-2 rounded-md opacity-80 hover:opacity-100"
+                                <button className="top-3 w-1/2 left-20 bg-red-500 text-white lg:text-sm px-3 py-2 rounded-md opacity-80 hover:opacity-100"
                                     onClick={() => trade("Put")}>
                                     Buy Lower
                                 </button>
                             </div>
                         </div>
-                        <Line data={chartData} options={chartOptions} />
+                        <Line style={{ maxHeight: '50vh' }} data={chartData} options={chartOptions} />
                     </div>
                 </div>
             </div>
