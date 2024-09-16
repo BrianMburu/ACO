@@ -4,12 +4,12 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import Sidebar from './components/sidebar/Sidebar';
 import Navbar from './components/navbar/Navbar';
-import Home from './components/pages/home/Home';
-import AppsPage from './components/pages/apps/AppsPage';
-import AoClimaOptions from './components/pages/climaOptions/AoClimaOptions';
-import AoWeatherAgent from './components/pages/weatherAgent/AoWeatherAgent';
-import WalletPage from './components/pages/wallet/WalletPage';
-import TradesAnalysisPage from './components/pages/trades/TradesAnalysisPage';
+import Home from './pages/home/Home';
+import AppsPage from './pages/apps/AppsPage';
+import AoClimaOptions from './pages/climaOptions/AoClimaOptions';
+import AoWeatherAgent from './pages/weatherAgent/AoWeatherAgent';
+import WalletPage from './pages/wallet/WalletPage';
+import TradesAnalysisPage from './pages/trades/TradesAnalysisPage';
 
 
 const App: React.FC = () => {

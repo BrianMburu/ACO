@@ -19,7 +19,7 @@ import Select, { ActionMeta, MultiValue, SingleValue } from 'react-select';
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import { PermissionType } from "arconnect";
 
-import useCronTick from "../utils/useCronTick";
+import useCronTick from "../../utils/useCronTick";
 import OverviewSection from "../walletOverview/WalletOverview"
 
 const SearchField: React.FC<{
