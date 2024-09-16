@@ -9,7 +9,7 @@ import { PermissionType } from "arconnect";
 import axios from "axios";
 
 import OverviewSection from "../walletOverview/WalletOverview"
-import { Map } from "../climaOptions/AoClimaOptions"
+import Map from "../../components/map/Map"
 
 interface Tag {
     name: string;
