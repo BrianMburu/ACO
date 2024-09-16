@@ -380,7 +380,12 @@ const AoClimaOptions: React.FC = () => {
 
 
     /* WEATHER START */
-    const api_key = "a2f4db644e9107746535b0d2ca43b85d";
+    const api_key = import.meta.env.VITE_OPENWEATHER_API_KEY;
+
+    if (!api_key) {
+        throw new Error(`No OpenWeather API key Found in environment`)
+    }
+
     const api_Endpoint = "https://api.openweathermap.org/data/2.5/";
 
     const [weatherData, setWeatherData] = React.useState<WeatherDataProps | null>(
