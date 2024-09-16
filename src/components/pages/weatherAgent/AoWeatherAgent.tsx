@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from "react";
-import * as L from 'leaflet';
+import L from 'leaflet';
 import { MapContainer, TileLayer, useMapEvents, Marker, Popup } from 'react-leaflet';
+
+import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
 
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import { PermissionType } from "arconnect";
 import axios from "axios";
 
 import OverviewSection from "../walletOverview/WalletOverview"
+import { Map } from "../climaOptions/AoClimaOptions"
+
 interface Tag {
     name: string;
     value: string;
@@ -72,7 +76,7 @@ const fetchHistoricalData = async (latitude: number, longitude: number) => {
     }
 };
 
-const aoWeatherAgent: React.FC = () => {
+const AoWeatherAgent: React.FC = () => {
     const NOT = "kN2oP4VDhAVn-7ZuVBTvWvWfD4fLZ5OK_yLCnaFUBNY";
     const AOC = "6XvODi4DHKQh1ebBugfyVIXuaHUE5SKEaK1-JbhkMfs";
 
@@ -131,8 +135,8 @@ const aoWeatherAgent: React.FC = () => {
 
         // Function to handle the swap and set success state
         const send = async (): Promise<void> => {
-            var units = 1 * 1000000000000;
-            var credUnits = units.toString();
+            const units = 1 * 1000000000000;
+            const credUnits = units.toString();
             try {
                 const getSwapMessage = await message({
                     process: AOC,
@@ -235,7 +239,9 @@ const aoWeatherAgent: React.FC = () => {
                 console.error("Error fetching AOC balance:", error);
             }
         };
-        fetchBalanceAoc(AOC);
+
+        fetchBalanceAoc(AOC)
+            .catch((error) => { console.error(error); });
     }, []);
 
     return (
@@ -246,43 +252,28 @@ const aoWeatherAgent: React.FC = () => {
             <div className="p-8">
                 <div className="relative rounded-lg overflow-hidden">
                     {/* Leaflet Map */}
-                    <MapContainer
-                        style={{ height: '400px', width: '100%' }}
-                        center={[lat!, lng!]}
-                        zoom={1}
-                        scrollWheelZoom={true}>
-                        <TileLayer
-                            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"//url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'//attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        />
-                        <Marker position={[lat!, lng!]}>
-                            <Popup>
-                                Lat: {lat}, Lng: {lng}
-                            </Popup>
-                        </Marker>
-                        <MapClickHandler />
-                    </MapContainer>
+                    <Map lat={lat!} lng={lng!} setLat={setLat} setLng={setLng} />
                 </div>
 
                 <div className="mt-8 max-w-1/2">
-                    <div className="mb-5">
+                    <div className="p-5 border border-gray-700 flex justify-center mb-5">
+                        <h1>Disclaimer!</h1>
+                        <p>AO Weather Agent is still in development. Use with caution.</p>
+                    </div>
+                    <div className="mb-5 flex px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-700">
                         <textarea id="message" rows={4} className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 
                     focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 
                     dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             placeholder="Write your plans today ..."
                             value={activities}
                             onChange={(e) => setActivities(e.target.value)}></textarea>
-                    </div>
-
-                    <div className="p-5 border border-gray-700 flex justify-center mb-5">
-                        <h1>Disclaimer!</h1>
-                        <p>AO Weather Agent is still in development. Use with caution.</p>
-                    </div>
-                    <div className="flex justify-center">
-                        <button className="top-3 w-1/2 left-3 bg-green-500 text-white px-3 py-2 rounded-md opacity-80 hover:opacity-100"
-                            onClick={handleCheck}>
-                            submit
-                        </button>
+                        <div className="flex ml-4 flex-col justify-end ">
+                            <button type="submit" className="inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-blue-100 dark:text-blue-500 dark:hover:bg-gray-600"
+                                onClick={handleCheck}>
+                                <PaperAirplaneIcon className="w-8 h-8" />
+                                <span className="sr-only">Send message</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -334,4 +325,4 @@ const aoWeatherAgent: React.FC = () => {
                 </Segment>
             </Form>
         </Container> */}
-export default aoWeatherAgent;
+export default AoWeatherAgent;
