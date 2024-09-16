@@ -1,104 +1,220 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from "axios";
+
 import { Line } from 'react-chartjs-2';
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend,
-    Filler,
-    ChartOptions,
-    ChartData
-} from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ChartOptions, TimeScale } from 'chart.js';
+import 'chart.js/auto';
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, TimeScale);
+import 'chartjs-adapter-date-fns';
+
 import classNames from 'classnames';
 import { FaRobot } from 'react-icons/fa';
 import { CubeTransparentIcon } from '@heroicons/react/24/solid';
 import { useNavigate } from 'react-router-dom';
 
+interface WeatherDataProps {
+    name: string;
+    id: number;
+    dt: number;
 
-ChartJS.register(
-    CategoryScale,
-    LinearScale,
-    PointElement,
-    LineElement,
-    Title,
-    Tooltip,
-    Legend,
-    Filler
-);
+    main: {
+        temp: number;
+    };
+    sys: {
+        country: string;
+    };
+}
 
-// Sample data for the charts
-const sampleData = [
-    { month: 'Jan', temperature: 4, rainfall: 20 },
-    { month: 'Feb', temperature: 5, rainfall: 18 },
-    { month: 'Mar', temperature: 9, rainfall: 15 },
-    { month: 'Apr', temperature: 12, rainfall: 12 },
-    { month: 'May', temperature: 16, rainfall: 8 },
-    { month: 'Jun', temperature: 18, rainfall: 5 },
-    { month: 'Jul', temperature: 22, rainfall: 3 },
-    { month: 'Aug', temperature: 24, rainfall: 4 },
-    { month: 'Sep', temperature: 20, rainfall: 6 },
-    { month: 'Oct', temperature: 15, rainfall: 10 },
-    { month: 'Nov', temperature: 10, rainfall: 16 },
-    { month: 'Dec', temperature: 5, rainfall: 20 }
-];
-
-// Chart configuration
-const chartOptions: ChartOptions<'line'> = {
-    scales: {
-        x: {
-            grid: {
-                display: true,
-                drawOnChartArea: true,
-                drawTicks: true,
-            },
-        },
-        y: {
-            ticks: {
-                display: false
-            },
-            border: {
-                display: false
-            },
-            grid: {
-                display: false,
-            },
-        },
-    },
-    plugins: {
-        legend: {
-            display: false,
-        },
-        tooltip: {
-            enabled: true,
-        },
-    },
-    elements: {
-        line: {
-            tension: 0.4, // Curved line
-        },
-    },
-};
-
-// Chart data for temperature
-const temperatureData: ChartData<'line'> = {
-    labels: sampleData.map(data => data.month),
-    datasets: [{
-        label: 'Temperature (°C)',
-        data: sampleData.map(data => data.temperature),
-        backgroundColor: 'transparent',//'rgba(255, 215, 0, 0.2)', // Light golden fill
-        borderColor: 'rgba(255, 215, 0, 1)', // Golden border
-        fill: true,
-    }],
-};
-
+interface HistoricalData {
+    time: number[];
+    [key: string]: number[];
+}
 
 const AppsPage: React.FC = () => {
     const navigate = useNavigate();
 
+    const api_key = "a2f4db644e9107746535b0d2ca43b85d";
+    const api_Endpoint = "https://api.openweathermap.org/data/2.5/";
+
+    const [chartData, setChartData] = useState<HistoricalData | null>(null);
+    const [weatherData, setWeatherData] = React.useState<WeatherDataProps | null>(
+        null
+    );
+    const [selectedTimeRange, setSelectedTimeRange] = useState<string>("weekly");
+
+
+    const fetchHistoricalTempData = async (latitude: number, longitude: number): Promise<HistoricalData | null> => {
+        const currentDate = new Date();
+
+        // Subtract 12 hours from the current time
+        currentDate.setHours(currentDate.getHours() - 12);
+
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+        const day = String(currentDate.getDate()).padStart(2, '0');
+
+        const formattedDate = `${year}-${month}-${day}`; // current day.
+
+        const paramsHistorical = {
+            latitude,
+            longitude,
+            start_date: "2024-01-01",
+            end_date: formattedDate,
+            hourly: ["temperature_2m"]
+        };
+
+        const urlHistorical = "https://archive-api.open-meteo.com/v1/archive";
+        try {
+            const response = await axios.get(urlHistorical, { params: paramsHistorical });
+            return response.data.hourly; // Return historical data
+        } catch (error) {
+            console.error("Error fetching historical data:", error);
+            return null;
+        }
+    };
+
+    const fetchCurrentWeather = async (lat: number, long: number) => {
+        const url = `${api_Endpoint}weather?lat=${lat}&lon=${long}&appid=${api_key}&units=metric`;
+        const searchResponse = await axios.get(url);
+
+        const currentWeatherData: WeatherDataProps = searchResponse.data;
+
+        setWeatherData(currentWeatherData);
+
+        return { currentWeatherData };
+    };
+
+    const filterDataByTimeRange = (data: HistoricalData, range: string) => {
+        const now = new Date();
+        let startDate: Date;
+
+        switch (range) {
+            case 'weekly':
+                startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                break;
+            case 'monthly':
+                startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                break;
+            case 'yearly':
+                startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+                break;
+            default:
+                startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        }
+        const filteredData: HistoricalData = { time: [], ...Object.fromEntries(Object.keys(data).map(key => [key, []])) };
+
+        data.time.forEach((time, index) => {
+            const date = new Date(time);
+
+            if (date >= startDate) {
+                filteredData.time.push(time);
+                Object.keys(data).forEach(key => {
+                    if (key !== 'time') {
+                        filteredData[key].push(data[key][index]);
+                    }
+                });
+            }
+        });
+
+        return filteredData;
+    }
+
+    const chartOptions: ChartOptions<'line'> = {
+        maintainAspectRatio: false,
+        responsive: true,
+        scales: {
+            x: {
+                type: 'time',
+                time: {
+                    unit: selectedTimeRange === 'daily' ? 'hour' :
+                        selectedTimeRange === 'weekly' ? 'day' :
+                            selectedTimeRange === 'monthly' ? 'week' : 'month',
+                    tooltipFormat: selectedTimeRange === 'daily' ? 'PPpp' :
+                        selectedTimeRange === 'weekly' ? 'PP' :
+                            selectedTimeRange === 'monthly' ? 'MMM yyyy' : 'yyyy'
+                },
+                grid: {
+                    display: true,
+                    drawOnChartArea: true,
+                    drawTicks: true,
+                },
+            },
+            y: {
+                ticks: {
+                    display: true,
+                },
+                border: {
+                    display: false
+                },
+                grid: {
+                    display: false,
+                },
+                position: 'right',
+            },
+        },
+        plugins: {
+            legend: {
+                display: true,
+            },
+            tooltip: {
+                enabled: true,
+                callbacks: {
+                    label: function (context) {
+                        const label = context.dataset.label ?? '';
+                        const value = context.raw;
+                        const time = new Date(context.label).toLocaleString();
+                        return `${label}: ${value} (${time})`;
+                    }
+                }
+            },
+        },
+
+        elements: {
+            line: {
+                tension: 0.4, // Curved line
+            },
+        },
+    };
+
+    const getChartData = () => {
+        if (!chartData) return null;
+
+        const filteredData = filterDataByTimeRange(chartData, selectedTimeRange ?? 'weekly');
+
+        const labels = filteredData.time.map((time) => new Date(time));
+        const datasets = [{
+            label: 'Temperature 2M (°C)',
+            data: filteredData.temperature_2m,
+            backgroundColor: 'transparent',
+            borderColor: 'rgba(255, 215, 0, 1)', // Golden border
+            fill: true,
+        }]
+
+        return {
+            labels,
+            datasets
+        };
+    };
+
+    // Fetch current weather data on map click or search.
+    useEffect(() => {
+        // Default Location New York City
+        const lat = 40.7128;
+        const lng = -74.0060;
+
+        fetchCurrentWeather(lat, lng)
+            // .then((data) => { console.log(data); })
+            .catch((error) => { console.log(error); });
+
+        fetchHistoricalTempData(lat, lng)
+            .then((data) => {
+                setChartData(data);
+                // console.log(data);
+            })
+            .catch((error) => { console.log(error); });
+    }, []);
+
+    // console.log(getChartData())
     return (
         <div className={classNames("content text-black dark:text-white flex flex-col")}>
             <div className="grid grid-cols-1 p-8 lg:grid-cols-3 md:grid-cols-2 gap-6">
@@ -118,19 +234,30 @@ const AppsPage: React.FC = () => {
                             <CubeTransparentIcon className='size-6' />
                         </div>
                     </div>
-                    <div className='flex text-xs space-x-3 mb-5'>
-                        <div className='cursor-pointer '>Daily</div>
-                        <div className='cursor-pointer '>Monthly</div>
-                        <div className='cursor-pointer '>Yearly</div>
+                    <div className='flex justify-between'>
+                        <div className='flex text-xs space-x-2 mb-5'>
+                            <button className={classNames('cursor-pointer rounded-lg text-sm p-1 text-center dark:text-text-white dark:hover:text-white dark:hover:bg-yellow-500 dark:focus:ring-yellow-900',
+                                { "bg-yellow-500": selectedTimeRange === "weekly" }
+                            )}
+                                onClick={() => setSelectedTimeRange("weekly")}>Weekly</button>
+                            <button className={classNames('cursor-pointer rounded-lg text-sm p-1 text-center dark:text-white dark:hover:text-white dark:hover:bg-yellow-500 dark:focus:ring-yellow-900',
+                                { "bg-yellow-500": selectedTimeRange === "monthly" }
+                            )}
+                                onClick={() => setSelectedTimeRange("monthly")}>Monthly</button>
+                        </div>
+                        <div className='text-xs mb-5 p-1'>
+                            {weatherData?.name}
+                        </div>
                     </div>
+
                     <div className="h-64 lg:h-auto md:h-auto">
-                        <Line data={temperatureData}
-                            options={chartOptions} />
+                        {chartData && <Line data={getChartData()!}
+                            options={chartOptions} />}
                     </div>
                     <div className="mt-4 flex justify-between">
                         <div>
                             <span className="text-gray-600 dark:text-gray-400 text-sm">Current Temp</span>
-                            <h3 className="text-md font-bold">12.6 °C</h3>
+                            <h3 className="text-md font-bold">{weatherData?.main.temp ?? '...'} °C</h3>
                         </div>
                         <div className='flex flex-col justify-center'>
                             <button type="button" className="text-yellow-400 hover:text-white border border-yellow-400 hover:bg-yellow-700 focus:ring-4 
