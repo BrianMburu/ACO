@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import L from 'leaflet';
-import { MapContainer, TileLayer, useMapEvents, Marker, Popup } from 'react-leaflet';
 
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
 
@@ -91,29 +89,6 @@ const AoWeatherAgent: React.FC = () => {
     const [longitude, setLongitude] = useState<number | null>(null);
     const [activities, setActivities] = useState("");
     const [sendSuccess, setSuccess] = useState(false);
-
-
-    // Custom map handler to get clicked position
-    const MapClickHandler: React.FC = () => {
-        useMapEvents({
-            click(e: L.LeafletMouseEvent) {
-                setLat(e.latlng.lat);
-                setLng(e.latlng.lng);
-
-                // Update the local storage
-                localStorage.setItem('lat', e.latlng.lat.toString());
-                localStorage.setItem('lng', e.latlng.lng.toString());
-                localStorage.setItem('location', `Lat: ${e.latlng.lat}, Lng: ${e.latlng.lng}`);
-
-                // Fly to the clicked coordinates
-                e.target.flyTo([e.latlng.lat, e.latlng.lng], 5, {
-                    animate: true,
-                    duration: 1 // duration in seconds
-                });
-            },
-        });
-        return null;
-    };
 
     function reloadPage(forceReload = false): void {
         if (forceReload) {

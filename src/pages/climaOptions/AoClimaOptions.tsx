@@ -2,12 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from "axios";
 import classNames from 'classnames';
 
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-import { MapContainer, TileLayer, useMapEvents, Marker, Popup, useMap } from 'react-leaflet';
-import { GeoSearchControl, OpenStreetMapProvider, SearchControl } from 'leaflet-geosearch';
-import 'leaflet-geosearch/dist/geosearch.css';
-
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ChartOptions, TimeScale } from 'chart.js';
 import 'chart.js/auto';
