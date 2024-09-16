@@ -24,10 +24,10 @@ const OverviewSection: React.FC<{ aocBalance: number, wallet: string }> = ({ aoc
             {/* Center Section - Market or Weather Info */}
             <div className="flex flex-col space-y-3 items-start">
                 <div className='flex space-x-4'>
-                    <div className="text-start text-sm">
+                    {/* <div className="text-start text-sm">
                         <p className="text-gray-400">Location</p>
                         <h3 className="text-xs font-semibold ">New York</h3>
-                    </div>
+                    </div> */}
                     <div className="text-start text-sm">
                         <p className="text-gray-400">Market Cap</p>
                         <h3 className="text-xs font-semibold">$843,333,177,777</h3>
