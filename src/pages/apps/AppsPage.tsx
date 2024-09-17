@@ -134,9 +134,7 @@ const AppsPage: React.FC = () => {
                     unit: selectedTimeRange === 'daily' ? 'hour' :
                         selectedTimeRange === 'weekly' ? 'day' :
                             selectedTimeRange === 'monthly' ? 'week' : 'month',
-                    tooltipFormat: selectedTimeRange === 'daily' ? 'PPpp' :
-                        selectedTimeRange === 'weekly' ? 'PP' :
-                            selectedTimeRange === 'monthly' ? 'MMM yyyy' : 'yyyy'
+                    tooltipFormat: 'PPpp',
                 },
                 grid: {
                     display: true,
@@ -193,6 +191,8 @@ const AppsPage: React.FC = () => {
             backgroundColor: 'transparent',
             borderColor: 'rgba(255, 215, 0, 1)', // Golden border
             fill: true,
+            pointRadius: selectedTimeRange === 'monthly' ? 1 : 3,
+            pointHoverRadius: selectedTimeRange === 'monthly' ? 3 : 5,
         }]
 
         return {

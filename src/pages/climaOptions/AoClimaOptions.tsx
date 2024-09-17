@@ -163,7 +163,11 @@ const ChartComponent: React.FC<{
             label: option.label,
             data: filteredData[option.value],
             borderColor: getRandomColor(),
-            fill: false
+            fill: false,
+            pointRadius: timeRange?.value === 'monthly' ? 2 :
+                timeRange?.value === 'yearly' ? 1 : 3,
+            pointHoverRadius: timeRange?.value === 'monthly' ? 4 :
+                timeRange?.value === 'yearly' ? 3 : 5,
         }));
 
         return {
@@ -190,9 +194,7 @@ const ChartComponent: React.FC<{
                     unit: timeRange?.value === 'daily' ? 'hour' :
                         timeRange?.value === 'weekly' ? 'day' :
                             timeRange?.value === 'monthly' ? 'week' : 'month',
-                    tooltipFormat: timeRange?.value === 'daily' ? 'PPpp' :
-                        timeRange?.value === 'weekly' ? 'PP' :
-                            timeRange?.value === 'monthly' ? 'MMM yyyy' : 'yyyy'
+                    tooltipFormat: 'PPpp',
                 },
                 grid: {
                     display: true,
