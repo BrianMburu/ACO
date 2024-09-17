@@ -232,11 +232,11 @@ const ChartComponent: React.FC<{
             },
         },
 
-        // elements: {
-        //     line: {
-        //         tension: 0.4, // Curved line
-        //     },
-        // },
+        elements: {
+            line: {
+                tension: 0.4, // Curved line
+            },
+        },
     };
 
     return (
