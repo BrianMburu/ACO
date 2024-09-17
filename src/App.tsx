@@ -19,24 +19,24 @@ const App: React.FC = () => {
   // Load the Default theme into the local Storage
   useEffect(() => {
     // save the active index to local storage
-    const savedIndex = localStorage.getItem('activeIndex');
+    const savedIndex = localStorage.getItem("activeIndex");
     if (savedIndex) {
       setActiveIndex(Number(savedIndex));
     }
 
     // Add delay transition to root to match sidebar and navbar
-    const root = document.getElementById('root');
-    root?.classList.add("transition-all")
-    root?.classList.add("duration-300")
+    const root = document.getElementById("root");
+    root?.classList.add("transition-all");
+    root?.classList.add("duration-300");
 
     // Check for saved user preference
-    const savedTheme = localStorage.getItem('theme');
+    const savedTheme = localStorage.getItem("theme");
     if (savedTheme) {
-      setTheme(savedTheme)
+      setTheme(savedTheme);
       document.documentElement.classList.add(savedTheme);
     } else {
-      setTheme('dark')
-      document.documentElement.classList.add('dark');
+      setTheme("dark");
+      document.documentElement.classList.add("dark");
     }
   }, []);
 
@@ -51,7 +51,7 @@ const App: React.FC = () => {
           <Navbar theme={theme} />
           {/* Pages Content go here */}
           <Routes>
-            <Route path="/" element={< Home />} />
+            <Route path="/" element={<Home />} />
             <Route path="apps" element={<AppsPage />} />
             <Route path="analysis" element={walletAddress ? <TradesAnalysisPage /> : <WalletConnectError />} />
             <Route path="wallet" element={walletAddress ? <WalletPage /> : <WalletConnectError />} />
@@ -64,4 +64,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App
+export default App;

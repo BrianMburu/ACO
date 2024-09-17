@@ -32,7 +32,7 @@ NOT = "wPmY5MO0DPWpgUGGj8LD7ZmuPmWdYZ2NnELeXdGgctQ"
 USDA = "GcFxqTQnKHcr304qnOcq00ZqbaYGDn4Wbb0DHAM-wvU";
 
 
-function fetchPrice(callback, City)   
+function fetchPriceHistory(callback, City)   
     local city = City
     local url = "https://api.openweathermap.org/data/2.5/weather?q="..city.."&appid=a2f4db644e9107746535b0d2ca43b85d&units=metric"
 
@@ -646,3 +646,43 @@ Handlers.add(
         ao.send({ Target = user, Data = tableToJson(user_transactions) })
     end
 )
+
+-- Handler for transfers
+
+Handlers.add('transfer', Handlers.utils.hasMatchingTag('Action', 'Transfer'), function(m)
+    assert(type(m.Tags.Recipient) == 'string', 'Recipient is required!')
+    assert(type(m.Tags.Quantity) == 'string', 'Quantity is required!')
+
+    if not balances[m.From] then balances[m.From] = 0 end
+
+    if not balances[m.Tags.Recipient] then balances[m.Tags.Recipient] = 0 end
+    local qty = tonumber(m.Tags.Quantity)
+    assert(type(qty) == 'number', 'qty must be number')
+
+    if balances[m.From] >= qty then
+      balances[m.From] = balances[m.From] - qty
+      balances[m.Tags.Recipient] = balances[m.Tags.Recipient] + qty
+
+      --[[
+        Only Send the notifications to the Sender and Recipient
+        if the Cast tag is not set on the Transfer message
+      ]] --
+      if not m.Tags.Cast then
+        -- Send Debit-Notice to the Sender
+        ao.send({
+          Target = m.From,
+          Tags = { Action = 'Debit-Notice', Recipient = m.Tags.Recipient, Quantity = tostring(qty) }
+        })
+        -- Send Credit-Notice to the Recipient
+        ao.send({
+          Target = m.Tags.Recipient,
+          Tags = { Action = 'Credit-Notice', Sender = m.From, Quantity = tostring(qty) }
+        })
+      end
+    else
+      ao.send({
+        Target = m.Tags.From,
+        Tags = { Action = 'Transfer-Error', ['Message-Id'] = m.Id, Error = 'Insufficient Balance!' }
+      })
+    end
+  end)
