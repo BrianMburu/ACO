@@ -1,14 +1,16 @@
-import { useState, useEffect } from "react";
-import "./App.css";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Sidebar from "./components/sidebar/Sidebar";
-import Navbar from "./components/navbar/Navbar";
-import LandingPage from "./components/pages/LandingPage/LandingPage";
-import AppsPage from "./components/pages/appsShow/apps";
-import TradingPage from "./components/pages/tradingData/tradingData";
-import WalletPage from "./components/pages/wallet/wallet";
-import AoWeatherAgent from "./components/pages/dapps/aow/aow";
-import AoClimaOptions from "./components/pages/dapps/aoc/aoc";
+import { useState, useEffect } from 'react'
+import './App.css'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+import Sidebar from './components/sidebar/Sidebar';
+import Navbar from './components/navbar/Navbar';
+import Home from './pages/home/Home';
+import AppsPage from './pages/apps/AppsPage';
+import AoClimaOptions from './pages/climaOptions/AoClimaOptions';
+import AoWeatherAgent from './pages/weatherAgent/AoWeatherAgent';
+import WalletPage from './pages/wallet/WalletPage';
+import TradesAnalysisPage from './pages/trades/TradesAnalysisPage';
+import WalletConnectError from './components/alerts/WalletConnectError';
 
 const App: React.FC = () => {
   const [theme, setTheme] = useState("");
@@ -38,25 +40,23 @@ const App: React.FC = () => {
     }
   }, []);
 
+  // Check if user has connected to Arweave Wallet
+  const walletAddress = localStorage.getItem('walletAddress');
+
   return (
     <Router>
-      <div className="flex h-screen">
-        <Sidebar
-          theme={theme}
-          updateTheme={setTheme}
-          activeIndex={activeIndex}
-          updateActiveIndex={setActiveIndex}
-        />
-        <div className="flex-grow">
+      <div className="flex max-h-full h-screen">
+        <Sidebar theme={theme} updateTheme={setTheme} activeIndex={activeIndex} updateActiveIndex={setActiveIndex} />
+        <div className="nav-content flex-grow">
           <Navbar theme={theme} />
           {/* Pages Content go here */}
           <Routes>
-            <Route path="/" element={<LandingPage />} />
+            <Route path="/" element={<Home />} />
             <Route path="apps" element={<AppsPage />} />
-            <Route path="analysis" element={<TradingPage />} />
-            <Route path="wallet" element={<WalletPage />} />
-            <Route path="aoWeatherAgent" element={<AoWeatherAgent />} />
-            <Route path="aoClimaOptions" element={<AoClimaOptions />} />
+            <Route path="analysis" element={walletAddress ? <TradesAnalysisPage /> : <WalletConnectError />} />
+            <Route path="wallet" element={walletAddress ? <WalletPage /> : <WalletConnectError />} />
+            <Route path="aoclimaoptions" element={walletAddress ? <AoClimaOptions /> : <WalletConnectError />} />
+            <Route path="aoweatheragent" element={walletAddress ? <AoWeatherAgent /> : <WalletConnectError />} />
           </Routes>
         </div>
       </div>
