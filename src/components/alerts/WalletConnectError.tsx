@@ -13,7 +13,7 @@ const WalletConnectError: React.FC = () => {
                     <h3 className="text-2xl font-large">Wallet Not Connected</h3>
                 </div>
                 <div className="mt-2 mb-4 text-lg">
-                    This Page requires a user to be coonected to arweaveWallet. Please use the connect button or the toggle button
+                    This Page requires a user to be connected to Arweave Wallet. Please use the connect button or the toggle button
                     in the top right corner of the screen to connect.
                 </div>
             </div>

@@ -255,48 +255,4 @@ const AoWeatherAgent: React.FC = () => {
     );
 };
 
-{/* <Container>
-            <Divider />
-            <Button>AOC Balance: {aocBalance} Acess Fee IS 1 AOC</Button>
-            <Divider />
-            <Form size="large">
-                <Segment stacked>
-                    <span>Enter Latitude and Longitude.</span>
-                    <Divider />
-                    <Form.Input
-                        placeholder="Enter Latitude"
-                        value={latitude ?? ""}
-                        type="number"
-                        onChange={(e) => setLatitude(parseFloat(e.target.value))}
-                    />
-                    <Form.Input
-                        placeholder="Enter Longitude"
-                        value={longitude ?? ""}
-                        type="number"
-                        onChange={(e) => setLongitude(parseFloat(e.target.value))}
-                    />
-                    <span>Enter Activities you plan on doing today.</span>
-                    <Divider />
-                    <TextArea
-                        placeholder="Activities"
-                        value={activities}
-                        onChange={(e) => setActivities(e.target.value)}
-                    />
-                    <Divider />
-                    <Message positive>
-                        <Message.Header>Disclaimer!</Message.Header>
-                        <p>AO Weather Agent is still in development. Use with caution.</p>
-                    </Message>
-                    <Button
-                        color="teal"
-                        fluid
-                        size="small"
-                        loading={isLoading}
-                        onClick={handleCheck}
-                    >
-                        Check
-                    </Button>
-                </Segment>
-            </Form>
-        </Container> */}
 export default AoWeatherAgent;
