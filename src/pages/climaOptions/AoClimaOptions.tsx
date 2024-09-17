@@ -2,12 +2,6 @@ import React, { useState, useEffect } from 'react';
 import axios from "axios";
 import classNames from 'classnames';
 
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-import { MapContainer, TileLayer, useMapEvents, Marker, Popup, useMap } from 'react-leaflet';
-import { GeoSearchControl, OpenStreetMapProvider, SearchControl } from 'leaflet-geosearch';
-import 'leaflet-geosearch/dist/geosearch.css';
-
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, ChartOptions, TimeScale } from 'chart.js';
 import 'chart.js/auto';
@@ -19,110 +13,9 @@ import Select, { ActionMeta, MultiValue, SingleValue } from 'react-select';
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import { PermissionType } from "arconnect";
 
-import useCronTick from "../utils/useCronTick";
+import useCronTick from "../../utils/useCronTick";
 import OverviewSection from "../walletOverview/WalletOverview"
-
-const SearchField: React.FC<{
-    provider: OpenStreetMapProvider,
-    setLat: (num: number) => void,
-    setLng: (num: number) => void
-}> = ({ provider, setLat, setLng }) => {
-    const searchControl = GeoSearchControl({
-        provider,
-        style: 'bar',
-        marker: L.Marker,
-        showMarker: true,
-        retainZoomLevel: false,
-        animateZoom: true,
-        autoClose: true,
-        searchLabel: 'Search for a city...',
-        keepResult: false,
-    });
-
-    const map = useMap();
-
-    useEffect(() => {
-        map.addControl(searchControl);
-
-        map.on('geosearch/showlocation', (result: any) => {
-            const { x, y } = result.location;
-            setLat(Number(y));
-            setLng(Number(x));
-
-            console.log('lon', x, 'lat', y)
-
-            // Update the local storage
-            localStorage.setItem('lat', Number(y).toString());
-            localStorage.setItem('lng', Number(x).toString());
-            // localStorage.setItem('location', `Lat: ${e.latlng.lat}, Lng: ${e.latlng.lng}`);
-            map.flyTo([y, x], 10, { animate: true, duration: 1 }); // Adjust the zoom level as needed
-        });
-
-        return () => {
-            map.removeControl(searchControl);
-            map.off('geosearch/showlocation');
-        };
-    }, []);
-
-    return null;
-}
-
-export const Map: React.FC<{
-    lat: number, lng: number,
-    setLat: (num: number) => void,
-    setLng: (num: number) => void
-}> = ({ lat, lng, setLat, setLng }) => {
-    const provider = new OpenStreetMapProvider();
-
-    // Custom map handler to get clicked position
-    const MapClickHandler: React.FC = () => {
-        useMapEvents({
-            click(e: L.LeafletMouseEvent) {
-                setLat(e.latlng.lat);
-                setLng(e.latlng.lng);
-                // setMapLocation(`Lat: ${e.latlng.lat}, Lng: ${e.latlng.lng}`);
-
-                // Update the local storage
-                localStorage.setItem('lat', e.latlng.lat.toString());
-                localStorage.setItem('lng', e.latlng.lng.toString());
-                localStorage.setItem('location', `Lat: ${e.latlng.lat}, Lng: ${e.latlng.lng}`);
-
-                // Fly to the clicked coordinates
-                e.target.flyTo([e.latlng.lat, e.latlng.lng], 10, {
-                    animate: true,
-                    duration: 1 // duration in seconds
-                });
-            },
-        });
-        return null;
-    };
-
-    return (
-        <>
-            {/* Leaflet Map */}
-            <MapContainer
-                style={{ height: '50vh', width: '100%' }}
-                center={[lat, lng]}
-                zoom={5}
-                scrollWheelZoom={true}>
-                <TileLayer
-                    url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"//url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'//attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                />
-                <Marker position={[lat, lng]}>
-                    <Popup>
-                        Lat: {lat}, Lng: {lng}
-                    </Popup>
-                </Marker>
-
-                <SearchField provider={provider} setLat={setLat} setLng={setLng} />
-
-                <MapClickHandler />
-            </MapContainer>
-        </>
-    )
-
-}
+import Map from "../../components/map/Map"
 
 interface HistoricalData {
     time: number[];
@@ -270,7 +163,11 @@ const ChartComponent: React.FC<{
             label: option.label,
             data: filteredData[option.value],
             borderColor: getRandomColor(),
-            fill: false
+            fill: false,
+            pointRadius: timeRange?.value === 'monthly' ? 2 :
+                timeRange?.value === 'yearly' ? 1 : 3,
+            pointHoverRadius: timeRange?.value === 'monthly' ? 4 :
+                timeRange?.value === 'yearly' ? 3 : 5,
         }));
 
         return {
@@ -297,9 +194,7 @@ const ChartComponent: React.FC<{
                     unit: timeRange?.value === 'daily' ? 'hour' :
                         timeRange?.value === 'weekly' ? 'day' :
                             timeRange?.value === 'monthly' ? 'week' : 'month',
-                    tooltipFormat: timeRange?.value === 'daily' ? 'PPpp' :
-                        timeRange?.value === 'weekly' ? 'PP' :
-                            timeRange?.value === 'monthly' ? 'MMM yyyy' : 'yyyy'
+                    tooltipFormat: 'PPpp',
                 },
                 grid: {
                     display: true,
@@ -337,11 +232,11 @@ const ChartComponent: React.FC<{
             },
         },
 
-        // elements: {
-        //     line: {
-        //         tension: 0.4, // Curved line
-        //     },
-        // },
+        elements: {
+            line: {
+                tension: 0.4, // Curved line
+            },
+        },
     };
 
     return (
@@ -429,7 +324,6 @@ const AoClimaOptions: React.FC = () => {
     const USDA = "GcFxqTQnKHcr304qnOcq00ZqbaYGDn4Wbb0DHAM-wvU";
 
     const [isLoading, setIsLoading] = React.useState(false);
-    const [address, setAddress] = useState("");
     const [aocBalance, setAocBalance] = useState(0);
     const [betAmount, setBetAmount] = useState("");
     const [isTradeLoading, setIsTradeLoading] = useState(false)
@@ -546,7 +440,7 @@ const AoClimaOptions: React.FC = () => {
 
         fetchBalanceAoc(AOC)
             .catch((error) => { console.log(error); });;
-    }, [address]);
+    }, []);
     /* TRADE END */
 
     // Add cron tick functionality.
@@ -566,7 +460,7 @@ const AoClimaOptions: React.FC = () => {
     return (
         <div className={classNames("content text-black dark:text-white")}>
             {/* Add the new Overview Section */}
-            <OverviewSection wallet={address} aocBalance={aocBalance} />
+            <OverviewSection aocBalance={aocBalance} />
 
             <div className="p-8 pt-0">
                 <div className="pb-4 text-xl font-semibold text-white">

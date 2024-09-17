@@ -4,13 +4,13 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import Sidebar from './components/sidebar/Sidebar';
 import Navbar from './components/navbar/Navbar';
-import Home from './components/pages/home/Home';
-import AppsPage from './components/pages/apps/AppsPage';
-import AoClimaOptions from './components/pages/climaOptions/AoClimaOptions';
-import AoWeatherAgent from './components/pages/weatherAgent/AoWeatherAgent';
-import WalletPage from './components/pages/wallet/WalletPage';
-import TradesAnalysisPage from './components/pages/trades/TradesAnalysisPage';
-
+import Home from './pages/home/Home';
+import AppsPage from './pages/apps/AppsPage';
+import AoClimaOptions from './pages/climaOptions/AoClimaOptions';
+import AoWeatherAgent from './pages/weatherAgent/AoWeatherAgent';
+import WalletPage from './pages/wallet/WalletPage';
+import TradesAnalysisPage from './pages/trades/TradesAnalysisPage';
+import WalletConnectError from './components/alerts/WalletConnectError';
 
 const App: React.FC = () => {
   const [theme, setTheme] = useState("");
@@ -40,6 +40,9 @@ const App: React.FC = () => {
     }
   }, []);
 
+  // Check if user has connected to Arweave Wallet
+  const walletAddress = localStorage.getItem('walletAddress');
+
   return (
     <Router>
       <div className="flex max-h-full h-screen">
@@ -50,10 +53,10 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={< Home />} />
             <Route path="apps" element={<AppsPage />} />
-            <Route path="analysis" element={<TradesAnalysisPage />} />
-            <Route path="wallet" element={<WalletPage />} />
-            <Route path="aoclimaoptions" element={<AoClimaOptions />} />
-            <Route path="aoweatheragent" element={<AoWeatherAgent />} />
+            <Route path="analysis" element={walletAddress ? <TradesAnalysisPage /> : <WalletConnectError />} />
+            <Route path="wallet" element={walletAddress ? <WalletPage /> : <WalletConnectError />} />
+            <Route path="aoclimaoptions" element={walletAddress ? <AoClimaOptions /> : <WalletConnectError />} />
+            <Route path="aoweatheragent" element={walletAddress ? <AoWeatherAgent /> : <WalletConnectError />} />
           </Routes>
         </div>
       </div>

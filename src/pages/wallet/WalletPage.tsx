@@ -46,7 +46,6 @@ const WalletPage: React.FC = (() => {
         timestamp: string;
     }
 
-    const [address, setAddress] = useState("");
     const [aocBalance, setAocBalance] = useState(0);
     const [usdaBalance, setUsdaBalance] = useState(0);
     const [isLoadingDeposit, setIsLoadingDeposit] = useState(false);
@@ -226,7 +225,7 @@ const WalletPage: React.FC = (() => {
             }
         };
         fetchBalanceUsda(USDA);
-    }, [address]);
+    }, []);
 
     useEffect(() => {
         const fetchBalanceAoc = async (process: string) => {
@@ -267,7 +266,7 @@ const WalletPage: React.FC = (() => {
             }
         };
         fetchBalanceAoc(AOC);
-    }, [address]);
+    }, []);
 
     useEffect(() => {
         const fetchTransactions = async () => {
@@ -327,7 +326,7 @@ const WalletPage: React.FC = (() => {
 
     return (
         <div className="content text-black dark:text-white">
-            <OverviewSection wallet={address} aocBalance={aocBalance} />
+            <OverviewSection aocBalance={aocBalance} />
 
             <div className='p-8 pt-0'>
                 <div className='w-full flex items-center justify-between text-white p-6 mb-8 shadow-lg border border-neutral-700 rounded-lg'>

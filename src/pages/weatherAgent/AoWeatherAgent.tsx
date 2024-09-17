@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import L from 'leaflet';
-import { MapContainer, TileLayer, useMapEvents, Marker, Popup } from 'react-leaflet';
 
 import { PaperAirplaneIcon } from '@heroicons/react/24/solid';
 
@@ -9,7 +7,7 @@ import { PermissionType } from "arconnect";
 import axios from "axios";
 
 import OverviewSection from "../walletOverview/WalletOverview"
-import { Map } from "../climaOptions/AoClimaOptions"
+import Map from "../../components/map/Map"
 
 interface Tag {
     name: string;
@@ -85,35 +83,11 @@ const AoWeatherAgent: React.FC = () => {
     const [forecastData, setForecastData] = useState(null);
     const [historicalData, setHistoricalData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [address, setAddress] = useState("");
     const [aocBalance, setAocBalance] = useState(0);
     const [latitude, setLatitude] = useState<number | null>(null);
     const [longitude, setLongitude] = useState<number | null>(null);
     const [activities, setActivities] = useState("");
     const [sendSuccess, setSuccess] = useState(false);
-
-
-    // Custom map handler to get clicked position
-    const MapClickHandler: React.FC = () => {
-        useMapEvents({
-            click(e: L.LeafletMouseEvent) {
-                setLat(e.latlng.lat);
-                setLng(e.latlng.lng);
-
-                // Update the local storage
-                localStorage.setItem('lat', e.latlng.lat.toString());
-                localStorage.setItem('lng', e.latlng.lng.toString());
-                localStorage.setItem('location', `Lat: ${e.latlng.lat}, Lng: ${e.latlng.lng}`);
-
-                // Fly to the clicked coordinates
-                e.target.flyTo([e.latlng.lat, e.latlng.lng], 5, {
-                    animate: true,
-                    duration: 1 // duration in seconds
-                });
-            },
-        });
-        return null;
-    };
 
     function reloadPage(forceReload = false): void {
         if (forceReload) {
@@ -247,7 +221,7 @@ const AoWeatherAgent: React.FC = () => {
     return (
         <div className="content text-black dark:text-white">
             {/* Add the new Overview Section */}
-            <OverviewSection wallet={address} aocBalance={aocBalance} />
+            <OverviewSection aocBalance={aocBalance} />
 
             <div className="p-8">
                 <div className="relative rounded-lg overflow-hidden">

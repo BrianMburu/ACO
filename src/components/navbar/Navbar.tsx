@@ -14,10 +14,21 @@ const permissions: PermissionType[] = [
 ];
 
 const Navbar: React.FC<{ theme: string }> = ({ theme }) => {
-    const location = useLocation();
-    const { pathname } = location;
+    const locationURL = useLocation();
+    const { pathname } = locationURL;
     const [address, setAddress] = useState("");
     const [isConnected, setIsConnected] = useState(false);
+
+    // FUnction to reload page
+    function reloadPage(forceReload = false): void {
+        if (forceReload) {
+            // Force reload from the server
+            location.href = location.href;
+        } else {
+            // Reload using the cache
+            location.reload();
+        }
+    }
 
     useEffect(() => {
         // Retrieve address from localStorage when component mounts
@@ -52,6 +63,7 @@ const Navbar: React.FC<{ theme: string }> = ({ theme }) => {
             setAddress(address);
             localStorage.setItem("walletAddress", address); // Store in localStorage
             setIsConnected(true); // Set connection state to true
+            reloadPage();
         } catch (error) {
             console.error("Failed to connect wallet:", error);
         }
@@ -64,6 +76,7 @@ const Navbar: React.FC<{ theme: string }> = ({ theme }) => {
             setAddress(""); // Clear the address when disconnected
             localStorage.removeItem("walletAddress"); // Remove from localStorage
             setIsConnected(false); // Set connection state to false
+            reloadPage();
         } catch (error) {
             console.error("Failed to disconnect wallet:", error);
         }
