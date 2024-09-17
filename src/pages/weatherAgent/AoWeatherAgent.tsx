@@ -83,7 +83,6 @@ const AoWeatherAgent: React.FC = () => {
     const [forecastData, setForecastData] = useState(null);
     const [historicalData, setHistoricalData] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [address, setAddress] = useState("");
     const [aocBalance, setAocBalance] = useState(0);
     const [latitude, setLatitude] = useState<number | null>(null);
     const [longitude, setLongitude] = useState<number | null>(null);
@@ -222,7 +221,7 @@ const AoWeatherAgent: React.FC = () => {
     return (
         <div className="content text-black dark:text-white">
             {/* Add the new Overview Section */}
-            <OverviewSection wallet={address} aocBalance={aocBalance} />
+            <OverviewSection aocBalance={aocBalance} />
 
             <div className="p-8">
                 <div className="relative rounded-lg overflow-hidden">

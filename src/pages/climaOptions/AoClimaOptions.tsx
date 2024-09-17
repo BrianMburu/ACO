@@ -322,7 +322,6 @@ const AoClimaOptions: React.FC = () => {
     const USDA = "GcFxqTQnKHcr304qnOcq00ZqbaYGDn4Wbb0DHAM-wvU";
 
     const [isLoading, setIsLoading] = React.useState(false);
-    const [address, setAddress] = useState("");
     const [aocBalance, setAocBalance] = useState(0);
     const [betAmount, setBetAmount] = useState("");
     const [isTradeLoading, setIsTradeLoading] = useState(false)
@@ -439,7 +438,7 @@ const AoClimaOptions: React.FC = () => {
 
         fetchBalanceAoc(AOC)
             .catch((error) => { console.log(error); });;
-    }, [address]);
+    }, []);
     /* TRADE END */
 
     // Add cron tick functionality.
@@ -459,7 +458,7 @@ const AoClimaOptions: React.FC = () => {
     return (
         <div className={classNames("content text-black dark:text-white")}>
             {/* Add the new Overview Section */}
-            <OverviewSection wallet={address} aocBalance={aocBalance} />
+            <OverviewSection aocBalance={aocBalance} />
 
             <div className="p-8 pt-0">
                 <div className="pb-4 text-xl font-semibold text-white">
