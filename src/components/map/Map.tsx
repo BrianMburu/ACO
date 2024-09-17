@@ -6,6 +6,22 @@ import { MapContainer, TileLayer, useMapEvents, Marker, Popup, useMap } from 're
 import { GeoSearchControl, OpenStreetMapProvider } from 'leaflet-geosearch';
 import 'leaflet-geosearch/dist/geosearch.css';
 
+// Import images for marker
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+// Set up the marker icon
+const defaultIcon = L.icon({
+    iconUrl: markerIcon,
+    iconRetinaUrl: markerIcon2x,
+    shadowUrl: markerShadow,
+    iconSize: [25, 41],
+    iconAnchor: [12, 41],
+    popupAnchor: [1, -34],
+    shadowSize: [41, 41],
+});
+
 const SearchField: React.FC<{
     provider: OpenStreetMapProvider,
     setLat: (num: number) => void,
@@ -93,7 +109,7 @@ const Map: React.FC<{
                     url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"//url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'//attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 />
-                <Marker position={[lat, lng]}>
+                <Marker position={[lat, lng]} icon={defaultIcon}>
                     <Popup>
                         Lat: {lat}, Lng: {lng}
                     </Popup>
