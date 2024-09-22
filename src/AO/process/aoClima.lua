@@ -313,6 +313,56 @@ function generateTransactionId()
     return "TX" .. tostring(transactionCounter)
 end
 
+function cleanTradeData(trade)
+    local cleanedTrade = {}
+
+    -- Copy all fields, but handle potentially problematic ones
+    for key, value in pairs(trade) do
+        if type(value) == "function" or type(value) == "userdata" then
+            -- Skip fields that cannot be serialized
+            print("Skipping field " .. tostring(key) .. " due to unsupported type.")
+        else
+            cleanedTrade[key] = value
+        end
+    end
+
+    return cleanedTrade
+end
+
+
+function createLeaderboard(closedTrades)
+    local leaderboard = {}
+
+    -- Iterate through closedTrades to accumulate wins, losses, and total trades for each trader
+    for _, trade in pairs(closedTrades) do
+        local processID = trade.UserId
+        local outcome = trade.Outcome -- Assuming `Outcome` is either "won" or "lost"
+
+        -- Initialize trader data if not already present
+        if not leaderboard[processID] then
+            leaderboard[processID] = { wins = 0, losses = 0, totalTrades = 0, winRate = 0 }
+        end
+
+        -- Update wins, losses, and total trades
+        if outcome == "won" then
+            leaderboard[processID].wins = leaderboard[processID].wins + 1
+        elseif outcome == "lost" then
+            leaderboard[processID].losses = leaderboard[processID].losses + 1
+        end
+
+        -- Update total trades
+        leaderboard[processID].totalTrades = leaderboard[processID].wins + leaderboard[processID].losses
+
+        -- Update win rate
+        if leaderboard[processID].totalTrades > 0 then
+            leaderboard[processID].winRate = (leaderboard[processID].wins / leaderboard[processID].totalTrades) * 100
+        end
+    end
+
+    return leaderboard
+end
+
+
 
 
 Handlers.add(
@@ -430,7 +480,7 @@ Handlers.add(
                     ContractType = m.Tags.ContractType,
                     ContractStatus = m.Tags.ContractStatus,
                     CreatedTime = currentTime,
-                    ContractExpiry = currentTime + (86400  * 1000), -- Convert minutes to milliseconds
+                    ContractExpiry = currentTime + (60  * 1000), -- Convert minutes to milliseconds
                     BetAmount = qty,
                     Payout = m.Tags.Payout,
                     Outcome = outcome -- Initialize outcome as nil
@@ -475,39 +525,25 @@ Handlers.add(
 )
 
 Handlers.add(
-    "closedTrades",
-    Handlers.utils.hasMatchingTag("Action", "closedTrades"),
+    "closeTrades",
+    Handlers.utils.hasMatchingTag("Action", "closeTrades"),
     function(m)
-        -- Check if closedTrades is nil or empty
         if not closedTrades or next(closedTrades) == nil then
-            print("closedTrades table is empty or nil.")
+            print("openTrades table is empty or nil.")
             ao.send({ Target = m.From, Data = "{}" }) -- Send an empty JSON if there are no trades
             return
         end
 
-        -- Print the entire closedTrades table as a string for debugging
-        print("Debugging closedTrades table:")
-        print(closedTrades, {comment = false})
-
-        -- Create a new table to store valid trades
-        local validTrades = {}
+        local filteredTrades = {}
         for tradeId, trade in pairs(closedTrades) do
             if trade.UserId == m.From then
-                local status, result = pcall(function() return tableToJson(trade) end)
-                if status then
-                    validTrades[tradeId] = trade
-                    print("Successfully converted tradeId: " .. tostring(tradeId) .. " to JSON.")
-                else
-                    print("Error converting tradeId: " .. tostring(tradeId) .. " to JSON. Skipping this trade.")
-                end
+                filteredTrades[tradeId] = trade
             end
         end
-
-        -- Convert validTrades to JSON and send it
-        local jsonData = tableToJson(validTrades)
-        ao.send({ Target = m.From, Data = jsonData })
+        ao.send({ Target = m.From, Data = tableToJson(filteredTrades) })
     end
 )
+
 
 Handlers.add(
     "CronTick", -- handler name
@@ -626,6 +662,7 @@ Handlers.add('balance', Handlers.utils.hasMatchingTag('Action', 'Balance'), func
     })
     end)
 
+
 -- Handler to view all transactions
 Handlers.add(
     "view_transactions",
@@ -644,5 +681,31 @@ Handlers.add(
         
         -- Send the filtered transactions back to the user
         ao.send({ Target = user, Data = tableToJson(user_transactions) })
+    end
+)
+
+
+-- Handler to view the leaderboard
+Handlers.add(
+    "fetch_leaderboard",
+    Handlers.utils.hasMatchingTag("Action", "fetch_leaderboard"),
+    function(m)
+        -- Create the leaderboard
+        local leaderboard = createLeaderboard(closedTrades)
+
+        -- Convert the leaderboard table to JSON and send it to the user
+        local jsonData = tableToJson(leaderboard)
+        ao.send({ Target = m.From, Data = jsonData })
+    end
+)
+
+
+
+Handlers.add(
+    "ClearExpiredTrades",
+    Handlers.utils.hasMatchingTag("Action", "ClearClosedTrades"),
+    function(m)
+        closedTrades = {}
+        print("closedTrades  have been cleared.")
     end
 )
