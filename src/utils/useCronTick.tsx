@@ -1,24 +1,22 @@
 import { useEffect } from "react";
 import { message, createDataItemSigner } from "@permaweb/aoconnect";
-import { PermissionType } from "arconnect";
 
-const permissions: PermissionType[] = [
-  "ACCESS_ADDRESS",
-  "SIGNATURE",
-  "SIGN_TRANSACTION",
-  "DISPATCH",
-];
+import * as othent from "@othent/kms";
 
 const useCronTick = (process: string) => {
   useEffect(() => {
     const checkExpiredContracts = async () => {
       try {
-        await message({
+        const signer = createDataItemSigner(othent); // Create Othent signer
+
+        // Send message to check expired contracts
+        const messageResponse = await message({
           process,
           tags: [{ name: "Action", value: "Cron" }],
-          signer: createDataItemSigner(window.arweaveWallet),
+          signer, // Using Othent signer here
         });
-        console.log("Expired contracts checked successfully");
+
+        console.log("Expired contracts checked successfully", messageResponse);
       } catch (error) {
         console.error("Error checking expired contracts:", error);
       }
@@ -32,14 +30,18 @@ const useCronTick = (process: string) => {
   useEffect(() => {
     const fetchPrice = async () => {
       try {
-        await message({
+        const signer = createDataItemSigner(othent); // Create Othent signer
+
+        // Send message to fetch prices
+        const messageResponse = await message({
           process,
           tags: [{ name: "Action", value: "completeTrade" }],
-          signer: createDataItemSigner(window.arweaveWallet),
+          signer, // Using Othent signer here
         });
-        console.log("Trades completed succesfully");
+
+        console.log("Trades completed successfully", messageResponse);
       } catch (error) {
-        console.error("Error completing Trade:", error);
+        console.error("Error completing trade:", error);
       }
     };
 
@@ -51,12 +53,16 @@ const useCronTick = (process: string) => {
   useEffect(() => {
     const closePositions = async () => {
       try {
-        await message({
+        const signer = createDataItemSigner(othent); // Create Othent signer
+
+        // Send message to close positions
+        const messageResponse = await message({
           process,
           tags: [{ name: "Action", value: "Close-Positions" }],
-          signer: createDataItemSigner(window.arweaveWallet),
+          signer, // Using Othent signer here
         });
-        console.log("Positions closed successfully");
+
+        console.log("Positions closed successfully", messageResponse);
       } catch (error) {
         console.error("Error closing positions:", error);
       }

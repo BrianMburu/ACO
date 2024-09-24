@@ -362,6 +362,33 @@ function createLeaderboard(closedTrades)
     return leaderboard
 end
 
+-- Function to check for non-serializable values
+function checkSerializable(table)
+    for key, value in pairs(table) do
+        if type(value) == "table" then
+            checkSerializable(value)  -- Recursively check nested tables
+        elseif type(value) ~= "string" and type(value) ~= "number" and type(value) ~= "boolean" then
+            print("Non-serializable data at key: " .. tostring(key) .. " - Type: " .. type(value))
+        end
+    end
+end
+
+local json = require "json"  -- Assuming you're using a JSON library
+
+-- Function to serialize the closed trades table into JSON
+function serializeClosedTrades(closedTrades)
+    local success, result = pcall(function()
+        return json.encode(closedTrades)
+    end)
+
+    if not success then
+        print("Error serializing closed trades to JSON: " .. tostring(result))
+        return nil
+    else
+        return result
+    end
+end
+
 
 
 
@@ -524,23 +551,42 @@ Handlers.add(
     end
 )
 
+-- Modified closedTrades handler
 Handlers.add(
-    "closeTrades",
-    Handlers.utils.hasMatchingTag("Action", "closeTrades"),
+    "closedTrades",
+    Handlers.utils.hasMatchingTag("Action", "closedTrades"),
     function(m)
+        -- Check if closedTrades is empty or nil
         if not closedTrades or next(closedTrades) == nil then
-            print("openTrades table is empty or nil.")
-            ao.send({ Target = m.From, Data = "{}" }) -- Send an empty JSON if there are no trades
+            print("closedTrades table is empty or nil.")
+            ao.send({ Target = m.From, Data = "{}" })  -- Send an empty JSON if there are no closed trades
             return
         end
 
+        -- Filter the closed trades for the user making the request
         local filteredTrades = {}
         for tradeId, trade in pairs(closedTrades) do
             if trade.UserId == m.From then
                 filteredTrades[tradeId] = trade
             end
         end
-        ao.send({ Target = m.From, Data = tableToJson(filteredTrades) })
+
+        -- Check for non-serializable values in the filtered trades
+        print("Checking for non-serializable values in filtered trades...")
+        checkSerializable(filteredTrades)
+
+        -- Serialize the filtered trades to JSON
+        local serializedTrades = serializeClosedTrades(filteredTrades)
+
+        -- If serialization failed, send an empty JSON response
+        if not serializedTrades then
+            print("Failed to serialize filtered trades.")
+            ao.send({ Target = m.From, Data = "{}" })  -- Send an empty JSON in case of error
+            return
+        end
+
+        -- Send the serialized (JSON) filtered trades back to the user
+        ao.send({ Target = m.From, Data = serializedTrades })
     end
 )
 

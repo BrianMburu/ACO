@@ -1,16 +1,9 @@
 import React, { useState, useEffect } from "react";
 
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
-import { PermissionType } from "arconnect";
+import * as othent from "@othent/kms";
 
 const LeaderboardPage: React.FC = () => {
-  const permissions: PermissionType[] = [
-    "ACCESS_ADDRESS",
-    "SIGNATURE",
-    "SIGN_TRANSACTION",
-    "DISPATCH",
-  ];
-
   const AOC = "6XvODi4DHKQh1ebBugfyVIXuaHUE5SKEaK1-JbhkMfs"; // Your process ID
 
   interface LeaderboardEntry {
@@ -26,10 +19,13 @@ const LeaderboardPage: React.FC = () => {
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
+        const signer = createDataItemSigner(othent); // Create Othent signer
+
+        // Send message to fetch leaderboard
         const messageResponse = await message({
           process: AOC,
           tags: [{ name: "Action", value: "fetch_leaderboard" }],
-          signer: createDataItemSigner(window.arweaveWallet),
+          signer, // Using Othent signer here
         });
 
         const getLeaderboardMessage = messageResponse;
@@ -38,14 +34,17 @@ const LeaderboardPage: React.FC = () => {
             message: getLeaderboardMessage,
             process: AOC,
           });
+
           if (Error) {
-            alert("Error fetching leaderboard:" + Error);
+            alert("Error fetching leaderboard: " + Error);
             return;
           }
+
           if (!Messages || Messages.length === 0) {
             alert("No messages were returned from AO. Please try later.");
             return;
           }
+
           const data = JSON.parse(Messages[0].Data);
           const leaderboardData = Object.entries(data).map(
             ([traderID, stats]: [string, any]) => ({
@@ -57,26 +56,24 @@ const LeaderboardPage: React.FC = () => {
             })
           );
 
-          // Sort the leaderboard data first by win rate, then by total trades if win rates are the same
+          // Sort the leaderboard data by win rate, then by total trades if win rates are the same
           const sortedLeaderboard = leaderboardData.sort((a, b) => {
             if (b.winRate === a.winRate) {
-              // If win rates are equal, compare total trades
-              return b.totalTrades - a.totalTrades;
+              return b.totalTrades - a.totalTrades; // Compare total trades if win rates are equal
             }
-            // Otherwise, compare win rates
-            return b.winRate - a.winRate;
+            return b.winRate - a.winRate; // Compare win rates
           });
 
-          setLeaderboard(sortedLeaderboard);
+          setLeaderboard(sortedLeaderboard); // Update the leaderboard state
         } catch (error) {
           alert("There was an error when loading the leaderboard: " + error);
         }
       } catch (error) {
-        console.error(error);
+        console.error("Error fetching leaderboard:", error);
       }
     };
 
-    fetchLeaderboard();
+    fetchLeaderboard(); // Call fetchLeaderboard when component mounts
   }, []);
 
   return (
