@@ -15,6 +15,7 @@ import WalletConnectError from './components/alerts/WalletConnectError';
 const App: React.FC = () => {
   const [theme, setTheme] = useState("");
   const [activeIndex, setActiveIndex] = useState(0); //sidebar's active index
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   // Load the Default theme into the local Storage
   useEffect(() => {
@@ -45,10 +46,11 @@ const App: React.FC = () => {
 
   return (
     <Router>
-      <div className="flex max-h-full h-screen">
-        <Sidebar theme={theme} updateTheme={setTheme} activeIndex={activeIndex} updateActiveIndex={setActiveIndex} />
+      <div className="flex h-screen w-screen">
+        <Sidebar theme={theme} updateTheme={setTheme} activeIndex={activeIndex} updateActiveIndex={setActiveIndex}
+          isCollapsed={isCollapsed} />
         <div className="nav-content flex-grow">
-          <Navbar theme={theme} />
+          <Navbar theme={theme} isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />
           {/* Pages Content go here */}
           <Routes>
             <Route path="/" element={<Home />} />

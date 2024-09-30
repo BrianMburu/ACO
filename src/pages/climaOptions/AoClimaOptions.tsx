@@ -240,14 +240,14 @@ const ChartComponent: React.FC<{
     };
 
     return (
-        <>
+        <div className='h-500'>
             {chartData && (
                 <Line
                     data={getChartData()!}
                     options={chartOptions}
                 />
             )}
-        </>
+        </div>
     );
 };
 
@@ -462,17 +462,17 @@ const AoClimaOptions: React.FC = () => {
             {/* Add the new Overview Section */}
             <OverviewSection aocBalance={aocBalance} />
 
-            <div className="p-8 pt-0">
-                <div className="pb-4 text-xl font-semibold text-white">
+            <div className="">
+                <div className="p-4 md:px-8 pb-4 text-lg md:text-xl font-semibold text-white">
                     <h2>Select Location to Predict from the Map:</h2>
                 </div>
                 {/* Map and Call/Put buttons */}
-                <div className="relative rounded-lg overflow-hidden text-white dark:text-blue-700 font-semibold">
+                <div className="px-1 md:px-8 relative rounded-lg overflow-hidden text-white dark:text-blue-700 font-semibold">
                     <Map lat={lat!} lng={lng!} setLat={setLat} setLng={setLng} />
                 </div>
 
                 {/* Multiselect Input for the Chart */}
-                <div className="flex w-full justify-between flex-wrap-reverse lg:space-x-4 sm:space-x-0 mt-8 weather-options">
+                <div className="px-8 flex w-full justify-between flex-wrap-reverse lg:space-x-4 sm:space-x-0 mt-8 weather-options">
                     <div className="sm:w-100 lg:w-1/2 max-w-1/2">
                         <label className="block mb-2 text-xl text-white font-semibold">Select Weather Data:</label>
                         <Select
@@ -498,12 +498,12 @@ const AoClimaOptions: React.FC = () => {
                 </div>
 
                 {/* Graph Section */}
-                <div className="overflow-x-auto mt-8">
+                <div className="pb-8 px-1 md:px-8 overflow-x-auto mt-8">
                     <div className="h-500px w-full shadow-lg p-6 bg-gradient-to-tl rounded-lg"
                         style={{ background: 'linear-gradient(to top left, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0))' }}>
                         {/* <h2 className="text-xl font-semibold mb-4">Weather Analysis</h2> */}
                         {/* Call and Put buttons */}
-                        <div className='trade-card flex flex-col space-y-4 sm:w-1/3 md:w-1/3 lg:w-1/5'>
+                        <div className='trade-card flex flex-col space-y-4 w-2/3 mb-4 lg:w-1/5'>
                             <div className="relative rounded-md shadow-sm">
                                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                     <span className="text-gray-500 sm:text-sm">$</span>
@@ -514,11 +514,11 @@ const AoClimaOptions: React.FC = () => {
                                 </input>
                             </div>
                             <div className='flex space-x-3 justify-center'>
-                                <button className="top-3 w-1/2 left-3 bg-green-500 text-white lg:text-sm px-3 py-2 rounded-md opacity-80 hover:opacity-100"
+                                <button className="top-3 w-1/2 left-3 bg-green-500 text-white text-sm px-3 py-2 rounded-md opacity-80 hover:opacity-100"
                                     onClick={() => trade("Call")}>
                                     Buy Higher
                                 </button>
-                                <button className="top-3 w-1/2 left-20 bg-red-500 text-white lg:text-sm px-3 py-2 rounded-md opacity-80 hover:opacity-100"
+                                <button className="top-3 w-1/2 left-20 bg-red-500 text-white text-sm px-3 py-2 rounded-md opacity-80 hover:opacity-100"
                                     onClick={() => trade("Put")}>
                                     Buy Lower
                                 </button>
