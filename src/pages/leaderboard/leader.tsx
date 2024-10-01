@@ -1,10 +1,22 @@
 import React, { useState, useEffect } from "react";
-
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import * as othent from "@othent/kms";
+import { FaSpinner } from "react-icons/fa"; // Import spinner icon
 
 const LeaderboardPage: React.FC = () => {
-  const AOC = "6XvODi4DHKQh1ebBugfyVIXuaHUE5SKEaK1-JbhkMfs"; // Your process ID
+  const AOC = "ga5QHk3FOfKf4YoEQxQSuZDgL5Z4Rjbswk3ASg2CeQE"; // Your process ID
+
+  interface Stats {
+    totalTrades: number;
+    wins: number;
+    losses: number;
+    winRate: number;
+  }
+
+  interface TraderData {
+    UserId: string;
+    stats: Stats;
+  }
 
   interface LeaderboardEntry {
     totalTrades: number;
@@ -15,9 +27,12 @@ const LeaderboardPage: React.FC = () => {
   }
 
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-
+  const [loading, setLoading] = useState(true); // Add loading state
+  const [sendSuccess, setSuccess] = useState(false);
   useEffect(() => {
     const fetchLeaderboard = async () => {
+      setLoading(true); // Start loading
+
       try {
         const signer = createDataItemSigner(othent); // Create Othent signer
 
@@ -37,22 +52,28 @@ const LeaderboardPage: React.FC = () => {
 
           if (Error) {
             alert("Error fetching leaderboard: " + Error);
+            setLoading(false);
             return;
           }
 
           if (!Messages || Messages.length === 0) {
             alert("No messages were returned from AO. Please try later.");
+            setLoading(false);
             return;
           }
 
-          const data = JSON.parse(Messages[0].Data);
+          // Explicitly cast the parsed data to Record<string, TraderData>
+          const data: Record<string, TraderData> = JSON.parse(Messages[0].Data);
+
+          // Properly map the leaderboard data
           const leaderboardData = Object.entries(data).map(
-            ([traderID, stats]: [string, any]) => ({
-              traderID,
-              totalTrades: stats.totalTrades,
-              wins: stats.wins,
-              losses: stats.losses,
-              winRate: stats.winRate,
+            ([rank, traderData]) => ({
+              traderID: traderData.UserId,
+              totalTrades: traderData.stats.totalTrades,
+              wins: traderData.stats.wins,
+              losses: traderData.stats.losses,
+              winRate: traderData.stats.winRate,
+              rank: parseInt(rank), // Parse rank as an integer
             })
           );
 
@@ -65,11 +86,14 @@ const LeaderboardPage: React.FC = () => {
           });
 
           setLeaderboard(sortedLeaderboard); // Update the leaderboard state
+          setLoading(false); // End loading
         } catch (error) {
           alert("There was an error when loading the leaderboard: " + error);
+          setLoading(false); // End loading on error
         }
       } catch (error) {
         console.error("Error fetching leaderboard:", error);
+        setLoading(false); // End loading on error
       }
     };
 
@@ -88,52 +112,63 @@ const LeaderboardPage: React.FC = () => {
         <h3 className="w-full text-xl font-bold mb-5 text-center">
           LeaderBoard
         </h3>
-        <div className="table w-full">
-          <div className="table-header-group">
-            <div className="table-cell text-left border border-neutral-700 p-3 rounded-tl-md">
-              Rank
-            </div>
-            <div className="table-cell text-left border border-neutral-700 p-3">
-              Trader ID
-            </div>
-            <div className="table-cell text-left border border-neutral-700 p-3">
-              Total Trades
-            </div>
-            <div className="table-cell text-left border border-neutral-700 p-3">
-              Wins
-            </div>
-            <div className="table-cell text-left border border-neutral-700 p-3">
-              Losses
-            </div>
-            <div className="table-cell text-left border border-neutral-700 p-3 rounded-tr-md">
-              Win Rate (%)
-            </div>
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <FaSpinner className="animate-spin text-3xl" />{" "}
+            {/* Loading Spinner */}
           </div>
-          <div className="table-row-group">
-            {leaderboard.map((entry, index) => (
-              <div className="table-row" key={index}>
-                <div className="table-cell text-left border border-neutral-700 p-3">
-                  {index + 1}
-                </div>
-                <div className="table-cell text-left border border-neutral-700 p-3">
-                  {entry.traderID}
-                </div>
-                <div className="table-cell text-left border border-neutral-700 p-3">
-                  {entry.totalTrades}
-                </div>
-                <div className="table-cell text-left border border-neutral-700 p-3">
-                  {entry.wins}
-                </div>
-                <div className="table-cell text-left border border-neutral-700 p-3">
-                  {entry.losses}
-                </div>
-                <div className="table-cell text-left border border-neutral-700 p-3">
-                  {entry.winRate.toFixed(2)}
-                </div>
+        ) : leaderboard.length === 0 ? (
+          <div className="text-center text-gray-500">
+            No traders found on the leaderboard.
+          </div>
+        ) : (
+          <div className="table w-full">
+            <div className="table-header-group">
+              <div className="table-cell text-left border border-neutral-700 p-3 rounded-tl-md">
+                Rank
               </div>
-            ))}
+              <div className="table-cell text-left border border-neutral-700 p-3">
+                Trader ID
+              </div>
+              <div className="table-cell text-left border border-neutral-700 p-3">
+                Total Trades
+              </div>
+              <div className="table-cell text-left border border-neutral-700 p-3">
+                Wins
+              </div>
+              <div className="table-cell text-left border border-neutral-700 p-3">
+                Losses
+              </div>
+              <div className="table-cell text-left border border-neutral-700 p-3 rounded-tr-md">
+                Win Rate (%)
+              </div>
+            </div>
+            <div className="table-row-group">
+              {leaderboard.map((entry, index) => (
+                <div className="table-row" key={index}>
+                  <div className="table-cell text-left border border-neutral-700 p-3">
+                    {index + 1}
+                  </div>
+                  <div className="table-cell text-left border border-neutral-700 p-3">
+                    {entry.traderID}
+                  </div>
+                  <div className="table-cell text-left border border-neutral-700 p-3">
+                    {entry.totalTrades}
+                  </div>
+                  <div className="table-cell text-left border border-neutral-700 p-3">
+                    {entry.wins}
+                  </div>
+                  <div className="table-cell text-left border border-neutral-700 p-3">
+                    {entry.losses}
+                  </div>
+                  <div className="table-cell text-left border border-neutral-700 p-3">
+                    {entry.winRate}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

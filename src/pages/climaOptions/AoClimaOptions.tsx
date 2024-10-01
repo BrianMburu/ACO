@@ -12,8 +12,8 @@ import {
   Title,
   Tooltip,
   Legend,
-  ChartOptions,
   TimeScale,
+  ChartOptions,
 } from "chart.js";
 import "chart.js/auto";
 ChartJS.register(
@@ -28,7 +28,7 @@ ChartJS.register(
 );
 import "chartjs-adapter-date-fns";
 
-import Select, { ActionMeta, MultiValue, SingleValue } from "react-select";
+import Select, { MultiValue, SingleValue } from "react-select";
 
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import { PermissionType } from "arconnect";
@@ -36,6 +36,7 @@ import { PermissionType } from "arconnect";
 import useCronTick from "../../utils/useCronTick";
 import OverviewSection from "../walletOverview/WalletOverview";
 import Map from "../../components/map/Map";
+import { FaSpinner } from "react-icons/fa"; // Import the spinner icon
 
 interface HistoricalData {
   time: number[];
@@ -56,7 +57,6 @@ interface WeatherDataProps {
   name: string;
   id: number;
   dt: number;
-
   main: {
     temp: number;
   };
@@ -94,21 +94,18 @@ const ChartComponent: React.FC<{
 }> = ({ selectedOptions, timeRange, lat, lng }) => {
   const [chartData, setChartData] = useState<HistoricalData | null>(null);
 
-  // Function to fetch Weather historical data
   const fetchHistoricalData = async (
     latitude: number,
     longitude: number
   ): Promise<HistoricalData | null> => {
     const currentDate = new Date();
-
-    // Subtract 6 hours from the current time
     currentDate.setHours(currentDate.getHours() - 6);
 
     const year = currentDate.getFullYear();
-    const month = String(currentDate.getMonth() + 1).padStart(2, "0"); // Months are zero-based
+    const month = String(currentDate.getMonth() + 1).padStart(2, "0");
     const day = String(currentDate.getDate()).padStart(2, "0");
 
-    const formattedDate = `${year}-${month}-${day}`; // current day.
+    const formattedDate = `${year}-${month}-${day}`;
 
     const paramsHistorical = {
       latitude,
@@ -142,15 +139,13 @@ const ChartComponent: React.FC<{
     }
   };
 
-  // Fetch historical weather data on map click or search.
   useEffect(() => {
     fetchHistoricalData(lat, lng)
       .then((data) => {
         setChartData(data);
-        // console.log(data);
       })
       .catch((error) => {
-        console.log(error);
+        console.error(error);
       });
   }, [lat, lng]);
 
@@ -182,7 +177,6 @@ const ChartComponent: React.FC<{
 
     data.time.forEach((time, index) => {
       const date = new Date(time);
-
       if (date >= startDate) {
         filteredData.time.push(time);
         Object.keys(data).forEach((key) => {
@@ -208,35 +202,14 @@ const ChartComponent: React.FC<{
     const datasets = selectedOptions.map((option) => ({
       label: option.label,
       data: filteredData[option.value],
-      borderColor: getRandomColor(),
+      borderColor: "#4CAF50", // Customize the line color
       fill: false,
-      pointRadius:
-        timeRange?.value === "monthly"
-          ? 2
-          : timeRange?.value === "yearly"
-          ? 1
-          : 3,
-      pointHoverRadius:
-        timeRange?.value === "monthly"
-          ? 4
-          : timeRange?.value === "yearly"
-          ? 3
-          : 5,
     }));
 
     return {
       labels,
       datasets,
     };
-  };
-
-  const getRandomColor = (): string => {
-    const letters = "0123456789ABCDEF";
-    let color = "#";
-    for (let i = 0; i < 6; i++) {
-      color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
   };
 
   const chartOptions: ChartOptions<"line"> = {
@@ -253,24 +226,9 @@ const ChartComponent: React.FC<{
               : timeRange?.value === "monthly"
               ? "week"
               : "month",
-          tooltipFormat: "PPpp",
-        },
-        grid: {
-          display: true,
-          drawOnChartArea: true,
-          drawTicks: true,
         },
       },
       y: {
-        ticks: {
-          display: true,
-        },
-        border: {
-          display: false,
-        },
-        grid: {
-          display: true,
-        },
         position: "right",
       },
     },
@@ -278,125 +236,66 @@ const ChartComponent: React.FC<{
       legend: {
         display: true,
       },
-      tooltip: {
-        enabled: true,
-        callbacks: {
-          label: function (context) {
-            const label = context.dataset.label ?? "";
-            const value = context.raw;
-            const time = new Date(context.label).toLocaleString();
-            return `${label}: ${value} (${time})`;
-          },
-        },
-      },
-    },
-
-    elements: {
-      line: {
-        tension: 0.4, // Curved line
-      },
     },
   };
 
-  return (
-    <>{chartData && <Line data={getChartData()!} options={chartOptions} />}</>
+  return chartData ? (
+    <Line data={getChartData()!} options={chartOptions} />
+  ) : (
+    <p>Loading chart data...</p>
   );
 };
 
 const AoClimaOptions: React.FC = () => {
-  /* MAP START */
-  // State to store latitude, longitude, and location
   const [lat, setLat] = useState<number | null>(40.7128);
   const [lng, setLng] = useState<number | null>(-74.006);
   const [mapLocation, setMapLocation] = useState<string | null>("New York, NY");
 
-  // Save Lat, Long to localStorage
   useEffect(() => {
     const storedLat = localStorage.getItem("lat");
     const storedLng = localStorage.getItem("lng");
     const storedMapLocation = localStorage.getItem("location");
 
-    if (
-      storedLat !== null &&
-      storedLng !== null &&
-      storedMapLocation !== null
-    ) {
+    if (storedLat && storedLng && storedMapLocation) {
       setLat(Number(storedLat));
       setLng(Number(storedLng));
       setMapLocation(storedMapLocation);
     }
   }, []);
-  /* MAP END */
 
-  /* WEATHER START */
   const api_key = import.meta.env.VITE_OPENWEATHER_API_KEY;
-
-  if (!api_key) {
-    throw new Error(`No OpenWeather API key Found in environment`);
-  }
-
   const api_Endpoint = "https://api.openweathermap.org/data/2.5/";
 
-  const [weatherData, setWeatherData] = React.useState<WeatherDataProps | null>(
-    null
-  );
-  // Store selected options for chart
+  const [weatherData, setWeatherData] = useState<WeatherDataProps | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<
     MultiValue<OptionType>
   >([{ value: "temperature_2m", label: "Temperature (2m)" }]);
-
-  // Handle weather options select change
-  const handleSelectChange = (selected: MultiValue<OptionType>) => {
-    setSelectedOptions(selected);
-  };
-
   const [selectedTimeRange, setSelectedTimeRange] = useState<
     SingleValue<OptionType>
   >({ value: "monthly", label: "Monthly" });
 
-  const handleTimeRangeChange = (selected: SingleValue<OptionType>) => {
-    setSelectedTimeRange(selected);
-  };
-
   const fetchCurrentWeather = async (lat: number, long: number) => {
     const url = `${api_Endpoint}weather?lat=${lat}&lon=${long}&appid=${api_key}&units=metric`;
     const searchResponse = await axios.get(url);
-
-    const currentWeatherData: WeatherDataProps = searchResponse.data;
-
-    setWeatherData(currentWeatherData);
-
-    return { currentWeatherData };
+    setWeatherData(searchResponse.data);
   };
 
-  // Fetch current weather data on map click or search.
   useEffect(() => {
     fetchCurrentWeather(lat!, lng!).catch((error) => {
-      console.log(error);
+      console.error(error);
     });
   }, [lat, lng]);
-  /* WEATHER END */
 
-  /* TRADE START */
-  const AOC = "6XvODi4DHKQh1ebBugfyVIXuaHUE5SKEaK1-JbhkMfs";
+  const AOC = "ga5QHk3FOfKf4YoEQxQSuZDgL5Z4Rjbswk3ASg2CeQE";
   const USDA = "GcFxqTQnKHcr304qnOcq00ZqbaYGDn4Wbb0DHAM-wvU";
-
-  const [isLoading, setIsLoading] = React.useState(false);
   const [aocBalance, setAocBalance] = useState(0);
   const [betAmount, setBetAmount] = useState("");
-  const [isTradeLoading, setIsTradeLoading] = useState(false);
+  const [isTradeLoading, setIsTradeLoading] = useState(false); // Spinner state
+  const [usdaBalance, setUsdaBalance] = useState(0);
+  const [isLoadingData, setIsLoadingData] = useState(true);
 
-  const permissions: PermissionType[] = [
-    "ACCESS_ADDRESS",
-    "SIGNATURE",
-    "SIGN_TRANSACTION",
-    "DISPATCH",
-  ];
-
-  // Handle betamount's input change
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target;
-    setBetAmount(value);
+    setBetAmount(event.target.value);
   };
 
   const randomInt = (min: number, max: number): number => {
@@ -404,63 +303,65 @@ const AoClimaOptions: React.FC = () => {
   };
 
   useEffect(() => {
-    const fetchBalanceAoc = async (process: string) => {
+    const fetchBalances = async () => {
       try {
-        // Fetch balance using othent signer
-        const messageResponse = await message({
-          process,
+        setIsLoadingData(true); // Start loading
+        const aocMessageResponse = await message({
+          process: AOC,
           tags: [{ name: "Action", value: "Balance" }],
-          signer: createDataItemSigner(othent), // use othent
+          signer: createDataItemSigner(othent),
         });
-
-        const { Messages, Error } = await result({
-          message: messageResponse,
-          process,
+        const aocResult = await result({
+          message: aocMessageResponse,
+          process: AOC,
         });
-
-        if (Error) {
-          alert("Error fetching balances:" + Error);
-          return;
+        if (!aocResult.Error) {
+          const aocBalanceTag = aocResult.Messages?.[0].Tags.find(
+            (tag: Tag) => tag.name === "Balance"
+          );
+          setAocBalance(
+            parseFloat((aocBalanceTag?.value / 1000000000000).toFixed(4)) || 0
+          );
         }
 
-        if (!Messages || Messages.length === 0) {
-          alert("No messages were returned from ao. Please try later.");
-          return;
-        }
-
-        const balanceTag = Messages[0].Tags.find(
-          (tag: Tag) => tag.name === "Balance"
-        );
-        const balance = balanceTag
-          ? parseFloat((balanceTag.value / 1000000000000).toFixed(4))
-          : 0;
-
-        if (process === AOC) {
-          setAocBalance(balance);
+        const usdaMessageResponse = await message({
+          process: USDA,
+          tags: [{ name: "Action", value: "Balance" }],
+          signer: createDataItemSigner(othent),
+        });
+        const usdaResult = await result({
+          message: usdaMessageResponse,
+          process: USDA,
+        });
+        if (!usdaResult.Error) {
+          const usdaBalanceTag = usdaResult.Messages?.[0].Tags.find(
+            (tag: Tag) => tag.name === "Balance"
+          );
+          setUsdaBalance(
+            parseFloat((usdaBalanceTag?.value / 1000000000000).toFixed(4)) || 0
+          );
         }
       } catch (error) {
-        console.error(error);
+        console.error("Error fetching balances:", error);
+      } finally {
+        setIsLoadingData(false); // Stop loading
       }
     };
 
-    fetchBalanceAoc(AOC);
+    fetchBalances();
   }, []);
 
   const trade = async (contractType: string) => {
-    setIsTradeLoading(true);
-
-    // Function to handle the trade operation and set success state
+    setIsTradeLoading(true); // Start spinner
     const value = parseInt(betAmount);
-    const units = value * 1000000000000; // Convert to appropriate units
-    const credUnits = units.toString(); // Convert units to string
+    const credUnits = (value * 1000000000000).toString();
 
     try {
-      // Prepare the message for creating the trade
       const getTradeMessage = await message({
-        process: AOC, // AOC process for trades
+        process: AOC,
         tags: [
           { name: "Action", value: "trade" },
-          { name: "TradeId", value: String(randomInt(1, 1000000000)) }, // Random Trade ID
+          { name: "TradeId", value: String(randomInt(1, 1000000000)) },
           { name: "Country", value: String(weatherData?.sys.country) },
           { name: "City", value: String(weatherData?.name) },
           { name: "CountryId", value: String(weatherData?.id) },
@@ -474,10 +375,9 @@ const AoClimaOptions: React.FC = () => {
           { name: "BetAmount", value: credUnits },
           { name: "Payout", value: String(1.5) }, // Fixed payout ratio
         ],
-        signer: createDataItemSigner(othent), // Othent signer for authentication
+        signer: createDataItemSigner(othent),
       });
 
-      // Get the result from AO process
       const { Messages, Error } = await result({
         message: getTradeMessage,
         process: AOC,
@@ -488,55 +388,40 @@ const AoClimaOptions: React.FC = () => {
         throw new Error(Error);
       }
 
-      if (!Messages || Messages.length === 0) {
-        alert("No messages were returned from AO. Please try later.");
-        throw new Error("No messages returned from AO.");
-      }
-
-      // Display the success message
       alert(Messages[0].Data);
-      setBetAmount(""); // Reset bet amount after successful trade
+      setBetAmount(""); // Reset the amount after a successful trade
     } catch (error) {
-      // Handle errors during trade process
       alert("There was an error in the trade process: " + error);
-      console.error(error); // Log the error for debugging
+      console.error(error);
+    } finally {
+      setIsTradeLoading(false); // Stop spinner
+      reloadPage(true); // Reload page after trade
     }
-
-    setIsTradeLoading(false);
-    reloadPage(true); // Reload the page to update the trade details
   };
 
-  /* TRADE END */
-
-  // Add cron tick functionality.
   useCronTick(AOC);
 
-  // Function to reload the page.
   function reloadPage(forceReload = false): void {
     if (forceReload) {
-      // Force reload from the server
       location.href = location.href;
     } else {
-      // Reload using the cache
       location.reload();
     }
   }
 
   return (
     <div className={classNames("content text-black dark:text-white")}>
-      {/* Add the new Overview Section */}
-      <OverviewSection aocBalance={aocBalance} />
+      <OverviewSection aocBalance={aocBalance} usdaBalance={usdaBalance} />
 
       <div className="p-8 pt-0">
         <div className="pb-4 text-xl font-semibold text-white">
           <h2>Select Location to Predict from the Map:</h2>
         </div>
-        {/* Map and Call/Put buttons */}
+
         <div className="relative rounded-lg overflow-hidden text-white dark:text-blue-700 font-semibold">
           <Map lat={lat!} lng={lng!} setLat={setLat} setLng={setLng} />
         </div>
 
-        {/* Multiselect Input for the Chart */}
         <div className="flex w-full justify-between flex-wrap-reverse lg:space-x-4 sm:space-x-0 mt-8 weather-options">
           <div className="sm:w-100 lg:w-1/2 max-w-1/2">
             <label className="block mb-2 text-xl text-white font-semibold">
@@ -546,7 +431,7 @@ const AoClimaOptions: React.FC = () => {
               isMulti
               options={weatherOptions}
               defaultValue={selectedOptions}
-              onChange={handleSelectChange}
+              onChange={setSelectedOptions}
               className="bg-gray-900 dark:bg-black text-black dark:text-white"
               placeholder="Select weather metrics..."
             />
@@ -558,14 +443,13 @@ const AoClimaOptions: React.FC = () => {
             <Select
               options={timeRanges}
               defaultValue={selectedTimeRange}
-              onChange={handleTimeRangeChange}
+              onChange={setSelectedTimeRange}
               className="bg-gray-900 dark:bg-black text-black dark:text-white"
-              placeholder="Select weather metrics..."
+              placeholder="Select time range..."
             />
           </div>
         </div>
 
-        {/* Graph Section */}
         <div className="overflow-x-auto mt-8">
           <div
             className="h-500px w-full shadow-lg p-6 bg-gradient-to-tl rounded-lg"
@@ -574,8 +458,6 @@ const AoClimaOptions: React.FC = () => {
                 "linear-gradient(to top left, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0))",
             }}
           >
-            {/* <h2 className="text-xl font-semibold mb-4">Weather Analysis</h2> */}
-            {/* Call and Put buttons */}
             <div className="trade-card flex flex-col space-y-4 sm:w-1/3 md:w-1/3 lg:w-1/5">
               <div className="relative rounded-md shadow-sm">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -585,25 +467,34 @@ const AoClimaOptions: React.FC = () => {
                   type="number"
                   name="betAmount"
                   id="amount"
-                  className="w-full block rounded-md border-0 py-1.5 pl-7 text-white ring-1 ring-inset ring-gray-300 
-                                placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                  className="w-full block rounded-md border-0 py-1.5 pl-7 text-white ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
                   placeholder="USDA Amount"
                   value={betAmount}
                   onChange={handleInputChange}
-                ></input>
+                />
               </div>
               <div className="flex space-x-3 justify-center">
                 <button
                   className="top-3 w-1/2 left-3 bg-green-500 text-white lg:text-sm px-3 py-2 rounded-md opacity-80 hover:opacity-100"
                   onClick={() => trade("Call")}
+                  disabled={isTradeLoading}
                 >
-                  Buy Higher
+                  {isTradeLoading ? (
+                    <FaSpinner className="animate-spin" />
+                  ) : (
+                    "Buy Higher"
+                  )}
                 </button>
                 <button
                   className="top-3 w-1/2 left-20 bg-red-500 text-white lg:text-sm px-3 py-2 rounded-md opacity-80 hover:opacity-100"
                   onClick={() => trade("Put")}
+                  disabled={isTradeLoading}
                 >
-                  Buy Lower
+                  {isTradeLoading ? (
+                    <FaSpinner className="animate-spin" />
+                  ) : (
+                    "Buy Lower"
+                  )}
                 </button>
               </div>
             </div>

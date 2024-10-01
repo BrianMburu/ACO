@@ -8,7 +8,7 @@ FEE_AMOUNT = "1000000000000" -- 1 $0RBT
 balances = balances or {}
 -- Data storage for transactions
 transactions = transactions or {}
-ArchivedTrades = ArchivedTrades or {}
+archivedTrades = archivedTrades or {}
 WinnersList = WinnersList or {}
 -- Table to store weather data
 WEATHER_DATA = WEATHER_DATA or  {}
@@ -32,7 +32,7 @@ NOT = "wPmY5MO0DPWpgUGGj8LD7ZmuPmWdYZ2NnELeXdGgctQ"
 USDA = "GcFxqTQnKHcr304qnOcq00ZqbaYGDn4Wbb0DHAM-wvU";
 
 
-function fetchPrice(callback, City)   
+function fetchPriceHistory(callback, City)   
     local city = City
     local url = "https://api.openweathermap.org/data/2.5/weather?q="..city.."&appid=a2f4db644e9107746535b0d2ca43b85d&units=metric"
 
@@ -89,7 +89,6 @@ function processExpiredContracts(msg)
     end
     -- Call the function to process trades
     processTrades()
-    sendRewards()
 end
 
 
@@ -101,7 +100,6 @@ function ClosePositions()
     -- Check if the expiredTrades list is empty and exit early if it is
     if next(expiredTrades) == nil then
         print("No expired trades to process.")
-        sendRewards()
         return
     end
     -- Check for matches in the expiredTrades table
@@ -129,6 +127,7 @@ function ClosePositions()
                     trade.Outcome = "lost"
                     closedTrades[tradeId] = trade
                     ArchivedTrades[tradeId] = trade
+                    trade.ContractStatus = "completed"
                     print("TradeId " .. tradeId .. " added to closedTrades and ArchivedTrades with outcome 'lost'.")
                 end
 
@@ -144,7 +143,6 @@ function ClosePositions()
     -- Empty the ReceivedData table
     ReceivedData = {}
     print("ReceivedData table cleared.")
-    sendRewards()
 end
 
 
@@ -205,6 +203,62 @@ function checkExpiredContracts(msg)
 end
 
 
+function sendRewards()
+  -- Process rewards for winners
+  for tradeId, winner in pairs(winners) do
+    if winner.Payout then
+      local payout = winner.Payout * winner.BetAmount
+
+      -- Ensure payout is a valid number
+      assert(type(payout) == 'number' and payout > 0, "Invalid payout amount")
+
+      -- Send the payout
+      local success, err = pcall(function()
+        ao.send({
+          Target = USDA,
+          Action = "Transfer",
+          Quantity = tostring(payout),
+          Recipient = tostring(winner.UserId)
+        })
+      end)
+
+      if not success then
+        print("Failed to transfer payout for TradeId " .. tradeId .. ": " .. err)
+      else
+        -- Ensure balances[winner.UserId] is initialized to 0 if it's nil
+        balances[winner.UserId] = (balances[winner.UserId] or 0) + payout
+        print("Transferred: " .. payout .. " successfully to " .. winner.UserId)
+
+        -- Update the trade outcome to "won" and move to closedTrades
+        winner.Outcome = "won"
+        winner.ContractStatus = "completed"
+        closedTrades[tradeId] = winner
+        print("TradeId " .. tradeId .. " marked as won and moved to closedTrades.")
+
+        -- Clear the winner from the winners table
+        winners[tradeId] = nil
+        print("Cleared TradeId " .. tradeId .. " from winners.")
+      end
+    else
+      print("Skipping reward for winner with nil Payout.")
+    end
+  end
+
+  -- Print final state of closedTrades
+  print("Final state of closedTrades:")
+  for tradeId, trade in pairs(closedTrades) do
+    print("TradeId: " .. tradeId .. ", Outcome: " .. tostring(trade.Outcome))
+  end
+
+  -- Optionally clear the winners table if it's now empty
+  if not next(winners) then
+    winners = {}
+    print("Cleared winners table after processing all rewards.")
+  end
+end
+
+
+
 -- Function to check if the trade is a winner
 function checkTradeWinner(trade, closingTemp)
     local winner = false
@@ -217,50 +271,6 @@ function checkTradeWinner(trade, closingTemp)
 end
 
 
-function sendRewards()
-
-    -- Process rewards for winners
-    for tradeId, winner in pairs(winners) do
-        if winner.Payout then
-            local payout = winner.Payout * winner.BetAmount
-            
-            -- Send the payout
-            ao.send({
-                Target = USDA,
-                Action = "Transfer",
-                Quantity = tostring(payout),
-                Recipient = tostring(winner.UserId)
-            })
-
-            -- Ensure balances[winner.UserId] is initialized to 0 if it's nil
-            balances[winner.UserId] = (balances[winner.UserId] or 0) + payout
-            print("Transferred: " .. payout .. " successfully to " .. winner.UserId)
-
-            -- Update the trade outcome to "won" and move to closedTrades
-            winner.Outcome = "won"
-            closedTrades[tradeId] = winner
-            print("TradeId " .. tradeId .. " marked as won and moved to closedTrades.")
-
-            -- Clear the winner from the winners table
-            winners[tradeId] = nil
-            print("Cleared TradeId " .. tradeId .. " from winners.")
-        else
-            print("Skipping reward for winner with nil Payout.")
-        end
-    end
-
-    -- Print final state of closedTrades
-    print("Final state of closedTrades:")
-    for tradeId, trade in pairs(closedTrades) do
-        print("TradeId: " .. tradeId .. ", Outcome: " .. tostring(trade.Outcome))
-    end
-
-    -- Optionally clear the winners table if it's now empty
-    if not next(winners) then
-        winners = {}
-        print("Cleared winners table after processing all rewards.")
-    end
-end
 
 function tableToJson(tbl)
     local result = {}
@@ -314,72 +324,76 @@ function generateTransactionId()
     return "TX" .. tostring(transactionCounter)
 end
 
+
 -- Function to create the leaderboard from closedTrades
 function createLeaderboard(closedTrades)
-    local leaderboard = {}
+  local leaderboard = {}
 
-    -- Iterate through closedTrades to accumulate wins, losses, and total trades for each trader
-    for _, trade in pairs(closedTrades) do
-        local processID = trade.UserId
-        local isWin = (trade.Outcome == "won") -- Use trade.Outcome to determine win/loss
+  -- Iterate through closedTrades to accumulate wins, losses, and total trades for each trader
+  for _, trade in pairs(closedTrades) do
+    local userID = trade.UserId
+    local isWin = (trade.Outcome == "won") -- Use trade.Outcome to determine win/loss
 
-        -- Initialize trader data if not already present
-        if not leaderboard[processID] then
-            leaderboard[processID] = { wins = 0, losses = 0, totalTrades = 0, winRate = 0 }
-        end
-
-        -- Update wins and losses
-        if isWin then
-            leaderboard[processID].wins = leaderboard[processID].wins + 1
-        else
-            leaderboard[processID].losses = leaderboard[processID].losses + 1
-        end
-
-        -- Update total number of trades
-        leaderboard[processID].totalTrades = leaderboard[processID].totalTrades + 1
-
-        -- Update win rate
-        if leaderboard[processID].totalTrades > 0 then
-            leaderboard[processID].winRate = (leaderboard[processID].wins / leaderboard[processID].totalTrades) * 100
-        end
+    -- Initialize trader data if not already present
+    if not leaderboard[userID] then
+      leaderboard[userID] = { wins = 0, losses = 0, totalTrades = 0, winRate = 0 }
     end
 
-    -- Convert leaderboard table into a sortable array
-    local sortableLeaderboard = {}
-    for processID, stats in pairs(leaderboard) do
-        table.insert(sortableLeaderboard, { UserId = processID, stats = stats })
+    -- Update wins and losses
+    if isWin then
+      leaderboard[userID].wins = leaderboard[userID].wins + 1
+    else
+      leaderboard[userID].losses = leaderboard[userID].losses + 1
     end
 
-    -- Sort the leaderboard by win rate (descending), then by totalTrades (descending)
-    table.sort(sortableLeaderboard, function(a, b)
-        if a.stats.winRate == b.stats.winRate then
-            return a.stats.totalTrades > b.stats.totalTrades -- Sort by total trades if win rates are equal
-        else
-            return a.stats.winRate > b.stats.winRate -- Sort by win rate primarily
-        end
-    end)
+    -- Update total number of trades
+    leaderboard[userID].totalTrades = leaderboard[userID].totalTrades + 1
 
-    -- Assign ranks after sorting
-    for rank, trader in ipairs(sortableLeaderboard) do
-        trader.rank = rank
+    -- Update win rate
+    leaderboard[userID].winRate = (leaderboard[userID].wins / leaderboard[userID].totalTrades) * 100
+  end
 
-        -- Print out the leaderboard in a formatted way
-        print(string.format(
-            "Rank: %d, User: %s, Wins: %d, Losses: %d, Win Rate: %.2f%%, Total Trades: %d",
-            rank, trader.UserId, trader.stats.wins, trader.stats.losses, trader.stats.winRate, trader.stats.totalTrades
-        ))
+  -- Convert leaderboard table into a sortable array
+  local sortableLeaderboard = {}
+  for userID, stats in pairs(leaderboard) do
+    table.insert(sortableLeaderboard, { UserId = userID, stats = stats })
+  end
+
+  -- Sort the leaderboard by win rate (descending), then by totalTrades (descending)
+  table.sort(sortableLeaderboard, function(a, b)
+    if a.stats.winRate == b.stats.winRate then
+      return a.stats.totalTrades > b.stats.totalTrades -- Sort by total trades if win rates are equal
+    else
+      return a.stats.winRate > b.stats.winRate -- Sort by win rate primarily
     end
+  end)
 
-    return sortableLeaderboard
+  -- Assign ranks after sorting
+  for rank, trader in ipairs(sortableLeaderboard) do
+    trader.rank = rank
+  end
+
+  -- Optional: Print out the leaderboard in a formatted way
+  local function printLeaderboard(leaderboard)
+    for _, trader in ipairs(leaderboard) do
+      print(string.format(
+        "Rank: %d, User: %s, Wins: %d, Losses: %d, Win Rate: %.2f%%, Total Trades: %d",
+        trader.rank, trader.UserId, trader.stats.wins, trader.stats.losses, trader.stats.winRate, trader.stats.totalTrades
+      ))
+    end
+  end
+
+  -- Uncomment the line below to print the leaderboard
+  -- printLeaderboard(sortableLeaderboard)
+
+  return sortableLeaderboard
 end
 
 
-
-
 Handlers.add(
-    "reward",
-    Handlers.utils.hasMatchingTag("Action", "reward"),
- sendRewards
+"reward",
+Handlers.utils.hasMatchingTag("Action", "reward"),
+sendRewards
 )
 
 
@@ -498,7 +512,7 @@ Handlers.add(
                     ContractType = m.Tags.ContractType,
                     ContractStatus = m.Tags.ContractStatus,
                     CreatedTime = currentTime,
-                    ContractExpiry = currentTime + (60  * 1000), -- Convert minutes to milliseconds
+                    ContractExpiry = currentTime + (86400  * 1000), -- Convert minutes to milliseconds
                     BetAmount = qty,
                     Payout = m.Tags.Payout,
                     Outcome = outcome -- Initialize outcome as nil
@@ -542,23 +556,74 @@ Handlers.add(
     end
 )
 
+
 Handlers.add(
-    "closeTrades",
-    Handlers.utils.hasMatchingTag("Action", "closeTrades"),
+    "closedTrades",
+    Handlers.utils.hasMatchingTag("Action", "closedTrades"),
     function(m)
+        -- Check if closedTrades is nil or empty
         if not closedTrades or next(closedTrades) == nil then
             print("closedTrades table is empty or nil.")
             ao.send({ Target = m.From, Data = "{}" }) -- Send an empty JSON if there are no trades
             return
         end
 
-        local filteredTrades = {}
+        -- Print the entire closedTrades table as a string for debugging
+        print("Debugging closedTrades table:")
+        print(closedTrades, {comment = false})
+
+        -- Create a new table to store valid trades
+        local validTrades = {}
         for tradeId, trade in pairs(closedTrades) do
             if trade.UserId == m.From then
-                filteredTrades[tradeId] = trade
+                local status, result = pcall(function() return tableToJson(trade) end)
+                if status then
+                    validTrades[tradeId] = trade
+                    print("Successfully converted tradeId: " .. tostring(tradeId) .. " to JSON.")
+                else
+                    print("Error converting tradeId: " .. tostring(tradeId) .. " to JSON. Skipping this trade.")
+                end
             end
         end
-        ao.send({ Target = m.From, Data = tableToJson(filteredTrades) })
+
+        -- Convert validTrades to JSON and send it
+        local jsonData = tableToJson(validTrades)
+        ao.send({ Target = m.From, Data = jsonData })
+    end
+)
+
+Handlers.add(
+    "archivedTrades",
+    Handlers.utils.hasMatchingTag("Action", "archivedTrades"),
+    function(m)
+        -- Check if archivedTrades is nil or empty
+        if not archivedTrades or next(archivedTrades) == nil then
+            print("archivedTrades table is empty or nil.")
+            ao.send({ Target = m.From, Data = "{}" }) -- Send an empty JSON if there are no trades
+            return
+        end
+
+        -- Print the entire archivedTrades table as a string for debugging
+        print("Debugging archivedTrades table:")
+        print(archivedTrades, {comment = false})
+
+        -- Create a new table to store valid trades
+        local validTrades = {}
+        for tradeId, trade in pairs(archivedTrades) do
+            if trade.UserId == m.From then
+                local status, result = pcall(function() return tableToJson(trade) end)
+                if status then
+                    validTrades[tradeId] = trade
+                    print("Successfully converted tradeId: " .. tostring(tradeId) .. " to JSON.")
+                else
+                    print("Error converting tradeId: " .. tostring(tradeId) .. " to JSON. Skipping this trade.")
+                end
+            end
+        end
+
+        -- Convert validTrades to JSON and send it
+        local jsonData = tableToJson(validTrades)
+        ao.send({ Target = m.From, Data = jsonData })
     end
 )
 
@@ -578,15 +643,46 @@ Handlers.add(
     end
 )
 
-
-Handlers.add(
-    "ClearExpiredTrades",
-    Handlers.utils.hasMatchingTag("Action", "ClearExpiredTrades"),
-    function(m)
-        expiredTrades = {}
-        print("expiredTrades  have been cleared.")
+Handlers.add('clearClosedTrades', Handlers.utils.hasMatchingTag('Action', 'Clear-Closed-Trades'), function(msg, env)
+  -- Ensure only the process owner can call this action
+  if msg.From == env.Process.Id then
+    -- Logic for clearing closed trades
+    if ClosedTrades and #ClosedTrades > 0 then
+      for _, trade in ipairs(ClosedTrades) do
+        table.insert(ArchivedTrades, trade)
+      end
+      ClosedTrades = {} -- Clear the closed trades
+      ao.send({
+        Target = msg.Tags.From,
+        Tags = {
+          Action = 'Clear-Success',
+          ['Message-Id'] = msg.Id,
+          Message = 'Closed trades have been successfully cleared!'
+        }
+      })
+    else
+      ao.send({
+        Target = msg.Tags.From,
+        Tags = {
+          Action = 'Clear-Error',
+          ['Message-Id'] = msg.Id,
+          Error = 'No closed trades to clear.'
+        }
+      })
     end
-)
+  else
+    -- If the caller is not the owner, send an error message
+    ao.send({
+      Target = msg.Tags.From,
+      Tags = {
+        Action = 'Clear-Error',
+        ['Message-Id'] = msg.Id,
+        Error = 'Only the Process Owner can clear closed trades!'
+      }
+    })
+  end
+end)
+
 
 Handlers.add(
     "ClearReceivedData",
@@ -681,8 +777,6 @@ Handlers.add('balance', Handlers.utils.hasMatchingTag('Action', 'Balance'), func
     end)
 
 
-
-
 -- Handler to view all transactions
 Handlers.add(
     "view_transactions",
@@ -733,11 +827,5 @@ Handlers.add(
 )
 
 
-Handlers.add(
-    "ClearExpiredTrades",
-    Handlers.utils.hasMatchingTag("Action", "ClearClosedTrades"),
-    function(m)
-        closedTrades = {}
-        print("closedTrades  have been cleared.")
-    end
-)
+
+

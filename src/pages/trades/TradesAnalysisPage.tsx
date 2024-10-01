@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-
-import * as othent from "@othent/kms";
+import { FaSpinner } from "react-icons/fa"; // Import spinner icon
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
+import * as othent from "@othent/kms";
 
 interface Trade {
   UserId: string;
-  TradeId: string; // Changed from number to string
+  TradeId: number;
   BetAmount: number;
   ContractType: string;
   Outcome: string;
@@ -13,17 +13,17 @@ interface Trade {
   CurrentTemp: string;
   ContractStatus: string;
   CountryId: string;
-  ContractExpiry: number; // Changed from string to number (timestamp)
-  CreatedTime: number; // Changed from string to number (timestamp)
+  ContractExpiry: string;
+  CreatedTime: string;
   ClosingTemp: number;
-  ClosingTime: number; // Changed from string to number (timestamp)
-  Payout: string; // Changed from number to string
+  ClosingTime: string;
+  Payout: number;
   City: string;
 }
 
 interface TradeDetails {
   UserId: string;
-  TradeId: string; // Changed from number to string
+  TradeId: number;
   BetAmount: number;
   Outcome: string;
   ContractType: string;
@@ -31,11 +31,11 @@ interface TradeDetails {
   CurrentTemp: string;
   ContractStatus: string;
   CountryId: string;
-  ContractExpiry: number; // Changed from string to number (timestamp)
-  CreatedTime: number; // Changed from string to number (timestamp)
+  ContractExpiry: string;
+  CreatedTime: string;
   ClosingTemp: number;
-  ClosingTime: number; // Changed from string to number (timestamp)
-  Payout: string; // Changed from number to string
+  ClosingTime: string;
+  Payout: number;
   City: string;
 }
 
@@ -50,102 +50,114 @@ const TradesTable: React.FC<{ trades: Trade[]; tabletype: string }> = ({
         background:
           tabletype === "open"
             ? "linear-gradient(to top left, rgba(135, 206, 250, 0.2), rgba(135, 206, 250, 0))"
-            : "linear-gradient(to top left, rgba(250, 178, 133, 0.2), rgba(135, 206, 250, 0))",
+            : tabletype === "close"
+            ? "linear-gradient(to top left, rgba(250, 178, 133, 0.2), rgba(135, 206, 250, 0))"
+            : "linear-gradient(to top left, rgba(169, 169, 169, 0.2), rgba(135, 206, 250, 0))",
       }}
     >
       <h3 className="w-full text-xl font-bold mb-5 text-center">
-        {tabletype === "open" ? "Open Trades" : "Closed Trades"}
+        {tabletype === "open"
+          ? "Open Trades"
+          : tabletype === "close"
+          ? "Closed Trades"
+          : "Archived Trades"}
       </h3>
-      <div className="max-w-full overflow-x-auto">
-        <div className="w-full table ">
-          <div className="table-header-group">
-            <div className="table-cell text-left border border-neutral-700 px-3 py-4 rounded-tl-md">
-              ProcessId
-            </div>
-            <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-              Country
-            </div>
-            <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-              City
-            </div>
-            <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-              Bought Temp
-            </div>
-            <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-              Closing Temp
-            </div>
-            <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-              Contract Type
-            </div>
-            <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-              Trade Amount
-            </div>
-            <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-              Created Time
-            </div>
-            <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-              Contract Expiry
-            </div>
-            <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-              Contract Status
-            </div>
-            <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-              Closing Time
-            </div>
-            <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-              Payout
-            </div>
-            <div className="table-cell text-left border border-neutral-700 px-3 py-4 rounded-tr-md">
-              Outcome
-            </div>
-          </div>
-          <div className="table-row-group">
-            {trades.map((trade: Trade, index: number) => (
-              <div className="table-row" key={index}>
-                <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-                  {trade.UserId.substring(0, 8)}
-                </div>
-                <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-                  {trade.Country}
-                </div>
-                <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-                  {trade.City}
-                </div>
-                <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-                  {trade.CurrentTemp}
-                </div>
-                <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-                  {trade.ClosingTemp}
-                </div>
-                <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-                  {trade.ContractType}
-                </div>
-                <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-                  {trade.BetAmount}
-                </div>
-                <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-                  {trade.CreatedTime}
-                </div>
-                <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-                  {trade.ContractExpiry}
-                </div>
-                <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-                  {trade.ContractStatus}
-                </div>
-                <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-                  {trade.ClosingTime}
-                </div>
-                <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-                  {trade.Payout}
-                </div>
-                <div className="table-cell text-left border border-neutral-700 px-3 py-4">
-                  {trade.Outcome}
-                </div>
-              </div>
-            ))}
-          </div>
+      {trades.length === 0 ? (
+        <div className="text-center text-gray-500">
+          No{" "}
+          {tabletype === "open"
+            ? "Open"
+            : tabletype === "close"
+            ? "Closed"
+            : "Archived"}{" "}
+          Trades Available.
         </div>
-      </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="min-w-full table-auto border-collapse border border-neutral-700">
+            <thead>
+              <tr>
+                <th className="px-4 py-2 border border-neutral-700">
+                  ProcessId
+                </th>
+                <th className="px-4 py-2 border border-neutral-700">Country</th>
+                <th className="px-4 py-2 border border-neutral-700">City</th>
+                <th className="px-4 py-2 border border-neutral-700">
+                  Bought Temp
+                </th>
+                <th className="px-4 py-2 border border-neutral-700">
+                  Closing Temp
+                </th>
+                <th className="px-4 py-2 border border-neutral-700">
+                  Contract Type
+                </th>
+                <th className="px-4 py-2 border border-neutral-700">
+                  Trade Amount
+                </th>
+                <th className="px-4 py-2 border border-neutral-700">
+                  Created Time
+                </th>
+                <th className="px-4 py-2 border border-neutral-700">
+                  Contract Expiry
+                </th>
+                <th className="px-4 py-2 border border-neutral-700">
+                  Contract Status
+                </th>
+                <th className="px-4 py-2 border border-neutral-700">
+                  Closing Time
+                </th>
+                <th className="px-4 py-2 border border-neutral-700">Payout</th>
+                <th className="px-4 py-2 border border-neutral-700">Outcome</th>
+              </tr>
+            </thead>
+            <tbody>
+              {trades.map((trade: Trade, index: number) => (
+                <tr key={index} className="bg-gray-100 dark:bg-gray-800">
+                  <td className="px-4 py-2 border border-neutral-700">
+                    {trade.UserId.substring(0, 8)}
+                  </td>
+                  <td className="px-4 py-2 border border-neutral-700">
+                    {trade.Country}
+                  </td>
+                  <td className="px-4 py-2 border border-neutral-700">
+                    {trade.City}
+                  </td>
+                  <td className="px-4 py-2 border border-neutral-700">
+                    {trade.CurrentTemp}
+                  </td>
+                  <td className="px-4 py-2 border border-neutral-700">
+                    {trade.ClosingTemp || "Pending"}
+                  </td>
+                  <td className="px-4 py-2 border border-neutral-700">
+                    {trade.ContractType}
+                  </td>
+                  <td className="px-4 py-2 border border-neutral-700">
+                    {trade.BetAmount}
+                  </td>
+                  <td className="px-4 py-2 border border-neutral-700">
+                    {trade.CreatedTime}
+                  </td>
+                  <td className="px-4 py-2 border border-neutral-700">
+                    {trade.ContractExpiry}
+                  </td>
+                  <td className="px-4 py-2 border border-neutral-700">
+                    {trade.ContractStatus}
+                  </td>
+                  <td className="px-4 py-2 border border-neutral-700">
+                    {trade.ClosingTime || "Pending"}
+                  </td>
+                  <td className="px-4 py-2 border border-neutral-700">
+                    {trade.Payout}
+                  </td>
+                  <td className="px-4 py-2 border border-neutral-700">
+                    {trade.Outcome}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 };
@@ -156,49 +168,38 @@ const TradesAnalysisPage: React.FC = () => {
     value: string;
   }
 
-  const AOC = "6XvODi4DHKQh1ebBugfyVIXuaHUE5SKEaK1-JbhkMfs";
+  const AOC = "ga5QHk3FOfKf4YoEQxQSuZDgL5Z4Rjbswk3ASg2CeQE";
   const [opentrades, setOpenTrades] = useState<Trade[]>([]);
   const [closedtrades, setClosedTrades] = useState<Trade[]>([]);
+  const [archivedtrades, setArchivedTrades] = useState<Trade[]>([]);
+  const [loading, setLoading] = useState(true); // Loading state
 
   useEffect(() => {
-    const fetchOpenTrades = async () => {
-      try {
-        // Create a signer using othent
-        const signer = createDataItemSigner(othent);
+    const fetchTradesData = async () => {
+      setLoading(true); // Start loading
 
-        // Send the message to the AO process
-        const messageResponse = await message({
+      try {
+        const othentSigner = createDataItemSigner(othent);
+
+        // Fetch open trades
+        const openTradesResponse = await message({
           process: AOC,
           tags: [{ name: "Action", value: "openTrades" }],
-          signer, // Use the signer created above
+          signer: othentSigner,
         });
 
-        const getProposalsMessage = messageResponse;
+        const openTradesResult = await result({
+          message: openTradesResponse,
+          process: AOC,
+        });
 
-        try {
-          const { Messages, Error } = await result({
-            message: getProposalsMessage,
-            process: AOC,
-          });
-
-          if (Error) {
-            alert("Error fetching proposals: " + Error);
-            return;
-          }
-
-          if (!Messages || Messages.length === 0) {
-            alert("No messages were returned from AO. Please try later.");
-            return;
-          }
-
-          // Parse the data returned from the message
-          const data = JSON.parse(Messages[0].Data);
+        if (!openTradesResult.Error) {
+          const data = JSON.parse(openTradesResult.Messages[0].Data);
           const openTradesData = Object.entries(data).map(([name, details]) => {
-            const typedDetails = details as TradeDetails;
+            const typedDetails: TradeDetails = details as TradeDetails;
             return {
-              name,
+              ...typedDetails,
               BetAmount: typedDetails.BetAmount / 1000000000000,
-              ContractType: typedDetails.ContractType,
               ContractExpiry: new Date(
                 typedDetails.ContractExpiry
               ).toLocaleString("en-US", {
@@ -207,7 +208,7 @@ const TradesAnalysisPage: React.FC = () => {
                 day: "2-digit",
                 hour: "2-digit",
                 minute: "2-digit",
-                hour12: false, // Use 24-hour format
+                hour12: false,
               }),
               CreatedTime: new Date(typedDetails.CreatedTime).toLocaleString(
                 "en-US",
@@ -217,15 +218,9 @@ const TradesAnalysisPage: React.FC = () => {
                   day: "2-digit",
                   hour: "2-digit",
                   minute: "2-digit",
-                  hour12: false, // Use 24-hour format
+                  hour12: false,
                 }
               ),
-              Country: typedDetails.Country,
-              City: typedDetails.City,
-              CurrentTemp: typedDetails.CurrentTemp,
-              ContractStatus: typedDetails.ContractStatus,
-              CountryId: typedDetails.CountryId,
-              TradeId: typedDetails.TradeId,
               ClosingTime: typedDetails.ClosingTime
                 ? new Date(typedDetails.ClosingTime).toLocaleString("en-US", {
                     year: "numeric",
@@ -236,94 +231,149 @@ const TradesAnalysisPage: React.FC = () => {
                     hour12: false,
                   })
                 : "Pending",
-              ClosingTemp: typedDetails.ClosingTemp,
-              Payout: typedDetails.Payout,
-              UserId: typedDetails.UserId,
-              Outcome: typedDetails.Outcome,
             };
           });
-
-          // Set the open trades data to state
           setOpenTrades(openTradesData);
-        } catch (error) {
-          alert("There was an error when loading balances: " + error);
         }
-      } catch (error) {
-        console.error("Error fetching open trades:", error);
-      }
-    };
 
-    // Call the fetch function on component mount
-    fetchOpenTrades();
-  }, []);
-
-  useEffect(() => {
-    const fetchClosedTrades = async () => {
-      try {
-        const signer = createDataItemSigner(othent);
-
-        const messageResponse = await message({
+        // Fetch closed trades
+        const closedTradesResponse = await message({
           process: AOC,
           tags: [{ name: "Action", value: "closedTrades" }],
-          signer,
+          signer: othentSigner,
         });
 
-        const { Messages, Error } = await result({
-          message: messageResponse,
+        const closedTradesResult = await result({
+          message: closedTradesResponse,
           process: AOC,
         });
 
-        if (Error) {
-          alert("Error fetching closed trades: " + Error);
-          return;
+        if (!closedTradesResult.Error) {
+          const data = JSON.parse(closedTradesResult.Messages[0].Data);
+          const closedTradesData = Object.entries(data).map(
+            ([name, details]) => {
+              const typedDetails: TradeDetails = details as TradeDetails;
+              return {
+                ...typedDetails,
+                BetAmount: typedDetails.BetAmount / 1000000000000,
+                ContractExpiry: new Date(
+                  typedDetails.ContractExpiry
+                ).toLocaleString("en-US", {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                }),
+                CreatedTime: new Date(typedDetails.CreatedTime).toLocaleString(
+                  "en-US",
+                  {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  }
+                ),
+                ClosingTime: typedDetails.ClosingTime
+                  ? new Date(typedDetails.ClosingTime).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                    })
+                  : "Pending",
+              };
+            }
+          );
+          setClosedTrades(closedTradesData);
         }
 
-        if (!Messages || Messages.length === 0 || !Messages[0].Data) {
-          alert("No closed trades were returned from AO.");
-          return;
-        }
-
-        // Parse the closed trades data
-        const data = JSON.parse(Messages[0].Data);
-
-        const closedTradesData = Object.entries(data).map(([name, details]) => {
-          const typedDetails = details as TradeDetails;
-
-          return {
-            Country: typedDetails.Country,
-            City: typedDetails.City,
-            CurrentTemp: typedDetails.CurrentTemp,
-            ContractStatus: typedDetails.ContractStatus,
-            CountryId: typedDetails.CountryId,
-            TradeId: typedDetails.TradeId,
-            Outcome: typedDetails.Outcome,
-            name,
-            BetAmount: typedDetails.BetAmount / 1000000000000, // Keep this division if it's expected
-            ContractType: typedDetails.ContractType,
-            ContractExpiry: typedDetails.ContractExpiry, // Keep as number
-            CreatedTime: typedDetails.CreatedTime, // Keep as number
-            ClosingTime: typedDetails.ClosingTime ?? null, // Handle as number or null
-            ClosingTemp: typedDetails.ClosingTemp,
-            Payout: typedDetails.Payout,
-            UserId: typedDetails.UserId,
-          };
+        // Fetch archived trades
+        const archivedTradesResponse = await message({
+          process: AOC,
+          tags: [{ name: "Action", value: "archivedTrades" }],
+          signer: othentSigner,
         });
 
-        // Set the closed trades data into state
-        setClosedTrades(closedTradesData);
+        const archivedTradesResult = await result({
+          message: archivedTradesResponse,
+          process: AOC,
+        });
+
+        if (!archivedTradesResult.Error) {
+          const data = JSON.parse(archivedTradesResult.Messages[0].Data);
+          const archivedTradesData = Object.entries(data).map(
+            ([name, details]) => {
+              const typedDetails: TradeDetails = details as TradeDetails;
+              return {
+                ...typedDetails,
+                BetAmount: typedDetails.BetAmount / 1000000000000,
+                ContractExpiry: new Date(
+                  typedDetails.ContractExpiry
+                ).toLocaleString("en-US", {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                }),
+                CreatedTime: new Date(typedDetails.CreatedTime).toLocaleString(
+                  "en-US",
+                  {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  }
+                ),
+                ClosingTime: typedDetails.ClosingTime
+                  ? new Date(typedDetails.ClosingTime).toLocaleString("en-US", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                    })
+                  : "Pending",
+              };
+            }
+          );
+          setArchivedTrades(archivedTradesData);
+        }
+
+        setLoading(false); // End loading when all trades are fetched
       } catch (error) {
-        console.error("Error fetching closed trades:", error);
-        alert("There was an error when loading closed trades: " + error);
+        console.error("Error fetching trades:", error);
+        setLoading(false); // End loading on error
       }
     };
 
-    fetchClosedTrades(); // Fetch closed trades on component mount
+    fetchTradesData();
   }, []);
 
   return (
-    <div className="content p-8 text-black dark:text-white">
-      <TradesTable trades={opentrades} tabletype="open" />
-      <TradesTable trades={closedtrades} tabletype="close" />
+    <div className="container mx-auto p-8">
+      {loading ? (
+        <div className="flex justify-center items-center h-64">
+          <FaSpinner className="animate-spin text-3xl" />{" "}
+          {/* Loading Spinner */}
+        </div>
+      ) : (
+        <>
+          <TradesTable trades={opentrades} tabletype="open" />
+          <TradesTable trades={closedtrades} tabletype="close" />
+          <TradesTable trades={archivedtrades} tabletype="archive" />
+        </>
+      )}
     </div>
   );
 };
