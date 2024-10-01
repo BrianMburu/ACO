@@ -27,7 +27,7 @@ const App: React.FC = () => {
 
     // Add delay transition to root to match sidebar and navbar
     const root = document.getElementById("root");
-    root?.classList.add("transition-all");
+    root?.classList.add("transition-colors");
     root?.classList.add("duration-300");
 
     // Check for saved user preference

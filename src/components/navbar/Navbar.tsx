@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FaBell, FaAngleDoubleRight } from 'react-icons/fa';
-import { SparklesIcon, Bars3Icon } from '@heroicons/react/24/solid';
+import { SparklesIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/solid';
 import classNames from 'classnames';
 import { useLocation } from 'react-router-dom';
 
@@ -138,9 +138,12 @@ const Navbar: React.FC<NavbarProps> = ({ theme, isCollapsed, setIsCollapsed }) =
             Connect</button>
         </div>} */}
 
-        <div className='flex md:hidden text-center'>
+        <div className={classNames('flex md:hidden text-center', {
+          "p-1 border border-red-400 rounded-lg text-red-400 shadow shadow-red-600": !isCollapsed,
+        })}>
           <button onClick={handleCollapseToggle}>
-            <Bars3Icon className='size-6' />
+            {isCollapsed ? <Bars3Icon className='size-6 transition-transform duration-300 ease-in-out' /> :
+              <XMarkIcon className='size-3 transition-transform duration-300 ease-in-out' />}
           </button>
         </div>
       </div>

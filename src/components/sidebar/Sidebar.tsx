@@ -33,7 +33,7 @@ const Sidebar: React.FC<SidebarBarProps> = ({ theme, updateTheme, activeIndex, u
   ];
 
   return (
-    <div className={classNames("sidebar h-screen md:flex flex-col w-15 md:w-20 justify-between text-white shadow-lg border-r border-r-neutral-700 transition-all duration-300", {
+    <div className={classNames("sidebar h-screen md:flex flex-col w-15 md:w-20 justify-between text-white shadow-lg border-r border-r-neutral-700 transition-colors duration-300 ease-in-out", {
       "hidden": isCollapsed,
       "flex": !isCollapsed,
       'bg-black': theme === 'dark',
@@ -68,7 +68,7 @@ const Sidebar: React.FC<SidebarBarProps> = ({ theme, updateTheme, activeIndex, u
             onClick={toggleTheme}
             className={classNames("flex items-center justify-center p-2 bg-neutral-700- text-white rounded-full transition-colors duration-300",
               {
-                "border border-amber-400 text-amber-300": theme == 'light',
+                "border border-amber-400 text-amber-400": theme == 'light',
                 "border border-neutral-400 text-neutral-300": theme == 'dark'
               })}
           >

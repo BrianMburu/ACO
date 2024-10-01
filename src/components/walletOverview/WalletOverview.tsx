@@ -7,13 +7,13 @@ const OverviewSection: React.FC<{ aocBalance: number }> = ({ aocBalance }) => {
     const walletAddress = localStorage.getItem('walletAddress');
 
     return (
-        <div className="w-full text-white p-6 mb-8 flex flex-wrap justify-between items-center shadow-lg border-b border-b-neutral-700">
+        <div className="w-full text-white p-2 sm:p-6 mb-4 md:mb-8 flex flex-col sm:flex-row justify-center sm:justify-between items-center shadow-lg border-b border-b-neutral-700">
             {/* Left Section - Wallet Info */}
-            <div className="flex items-start space-x-4">
-                <div className='p-2 bg-neutral-700 rounded-full'>
+            <div className="flex justify-start items-start md:space-x-4 my-3">
+                <div className='p-2 bg-neutral-700 rounded-full hidden md:block'>
                     <FaWallet size="15" />
                 </div>
-                <div className='items-start'>
+                <div className='tems-start text-start'>
                     <p className="text-gray-400 text-sm">Your Wallet / Balance</p>
                     <div className="flex items-baseline space-x-2">
                         <h2 className="text-3xl font-semibold">{walletAddress ? walletAddress.substring(0, 5) : ""}</h2>
@@ -24,7 +24,7 @@ const OverviewSection: React.FC<{ aocBalance: number }> = ({ aocBalance }) => {
             </div>
 
             {/* Center Section - Market or Weather Info */}
-            <div className="flex flex-col space-y-3 items-start">
+            <div className="flex flex-col items-start">
                 <div className='flex space-x-4'>
                     {/* <div className="text-start text-sm">
                         <p className="text-gray-400">Location</p>
