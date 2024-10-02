@@ -12,7 +12,8 @@ const Navbar: React.FC<{ theme: string }> = ({ theme }) => {
   const [address, setAddress] = useState<string | null>(null);
   const [profilePic, setProfilePic] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const [isSigningIn, setIsSigningIn] = useState(false); // New state for loading spinner
+  const [isSigningIn, setIsSigningIn] = useState(false); // New state for sign-in loading
+  const [isSigningOut, setIsSigningOut] = useState(false); // New state for sign-out loading
 
   useEffect(() => {
     // Retrieve address and profilePic from localStorage if they exist
@@ -34,7 +35,7 @@ const Navbar: React.FC<{ theme: string }> = ({ theme }) => {
   }, []);
 
   const handleConnect = async () => {
-    setIsSigningIn(true); // Start loading spinner
+    setIsSigningIn(true); // Start loading spinner for sign-in
     try {
       const res = await connect();
       setAddress(res.walletAddress);
@@ -48,11 +49,12 @@ const Navbar: React.FC<{ theme: string }> = ({ theme }) => {
     } catch (error) {
       console.error("Connection failed", error);
     } finally {
-      setIsSigningIn(false); // Stop loading spinner
+      setIsSigningIn(false); // Stop loading spinner for sign-in
     }
   };
 
   const handleDisconnect = async () => {
+    setIsSigningOut(true); // Start loading spinner for sign-out
     try {
       await disconnect();
       setAddress(null);
@@ -65,6 +67,8 @@ const Navbar: React.FC<{ theme: string }> = ({ theme }) => {
       setIsConnected(false);
     } catch (error) {
       console.error("Disconnection failed", error);
+    } finally {
+      setIsSigningOut(false); // Stop loading spinner for sign-out
     }
   };
 
@@ -109,8 +113,13 @@ const Navbar: React.FC<{ theme: string }> = ({ theme }) => {
               onClick={handleDisconnect}
               className="text-red-500 hover:text-white border border-red-500 hover:bg-red-600 focus:ring-4 
                         focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+              disabled={isSigningOut} // Disable button while signing out
             >
-              Sign Out
+              {isSigningOut ? (
+                <FaSpinner className="animate-spin" /> // Show spinner while signing out
+              ) : (
+                "Sign Out"
+              )}
             </button>
           </>
         ) : (

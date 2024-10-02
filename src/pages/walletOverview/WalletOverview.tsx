@@ -1,5 +1,5 @@
 import React from "react";
-import { FaWallet } from "react-icons/fa";
+import { FaWallet, FaCopy } from "react-icons/fa"; // Import copy icon
 
 interface OverviewProps {
   aocBalance: number;
@@ -11,6 +11,14 @@ const OverviewSection: React.FC<OverviewProps> = ({
   usdaBalance,
 }) => {
   const walletAddress = localStorage.getItem("walletAddress");
+
+  // Copy wallet address to clipboard
+  const copyToClipboard = () => {
+    if (walletAddress) {
+      navigator.clipboard.writeText(walletAddress);
+      alert("Wallet address copied to clipboard!");
+    }
+  };
 
   return (
     <div className="w-full text-white p-6 mb-8 flex flex-wrap justify-between items-center shadow-lg border-b border-b-neutral-700 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg">
@@ -31,6 +39,13 @@ const OverviewSection: React.FC<OverviewProps> = ({
                     )}...${walletAddress.substring(walletAddress.length - 5)}`
                   : ""}
               </h2>
+              {walletAddress && (
+                <FaCopy
+                  className="cursor-pointer text-gray-400 hover:text-white"
+                  onClick={copyToClipboard}
+                  title="Copy wallet address"
+                />
+              )}
             </div>
             <div className="flex space-x-6 mt-2">
               <span className="text-green-400 text-xl font-bold">
