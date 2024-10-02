@@ -1,52 +1,67 @@
 import React, { useState, useEffect } from "react";
-import { FaBell, FaAngleDoubleRight, FaCopy, FaGoogle } from "react-icons/fa";
+import { FaAngleDoubleRight } from "react-icons/fa";
 import { SparklesIcon } from "@heroicons/react/24/solid";
 import classNames from "classnames";
 import { useLocation } from "react-router-dom";
 import { connect, disconnect } from "@othent/kms";
+import { FaSpinner } from "react-icons/fa"; // Import spinner icon
 
 const Navbar: React.FC<{ theme: string }> = ({ theme }) => {
   const locationURL = useLocation();
   const { pathname } = locationURL;
-  const [address, setAddress] = useState("");
-  const [profilePic, setProfilePic] = useState("");
+  const [address, setAddress] = useState<string | null>(null);
+  const [profilePic, setProfilePic] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(false); // New state for loading spinner
 
   useEffect(() => {
-    // Retrieve address and profilePic from localStorage when component mounts
+    // Retrieve address and profilePic from localStorage if they exist
     const storedAddress = localStorage.getItem("walletAddress");
     const storedProfilePic = localStorage.getItem("profilePic");
 
-    if (storedAddress) {
+    if (storedAddress && storedAddress !== "undefined") {
       setAddress(storedAddress);
-      setIsConnected(true); // User is connected if address exists
+      setIsConnected(true);
+    } else {
+      setAddress(null);
     }
 
-    if (storedProfilePic) {
+    if (storedProfilePic && storedProfilePic !== "undefined") {
       setProfilePic(storedProfilePic);
+    } else {
+      setProfilePic(null);
     }
   }, []);
 
   const handleConnect = async () => {
+    setIsSigningIn(true); // Start loading spinner
     try {
       const res = await connect();
       setAddress(res.walletAddress);
       setProfilePic(res.picture);
+
+      // Save to localStorage
       localStorage.setItem("walletAddress", res.walletAddress);
       localStorage.setItem("profilePic", res.picture);
+
       setIsConnected(true);
     } catch (error) {
       console.error("Connection failed", error);
+    } finally {
+      setIsSigningIn(false); // Stop loading spinner
     }
   };
 
   const handleDisconnect = async () => {
     try {
       await disconnect();
-      setAddress("");
-      setProfilePic("");
+      setAddress(null);
+      setProfilePic(null);
+
+      // Remove from localStorage
       localStorage.removeItem("walletAddress");
       localStorage.removeItem("profilePic");
+
       setIsConnected(false);
     } catch (error) {
       console.error("Disconnection failed", error);
@@ -57,14 +72,6 @@ const Navbar: React.FC<{ theme: string }> = ({ theme }) => {
     text.charAt(0).toUpperCase() + text.slice(1);
 
   const cleanPathname = pathname.startsWith("/") ? pathname.slice(1) : pathname;
-
-  // Copy address to clipboard function
-  const copyToClipboard = () => {
-    if (address) {
-      navigator.clipboard.writeText(address);
-      alert("Address copied to clipboard!");
-    }
-  };
 
   return (
     <nav
@@ -91,14 +98,6 @@ const Navbar: React.FC<{ theme: string }> = ({ theme }) => {
       <div className="flex items-center space-x-4">
         {isConnected ? (
           <>
-            <div className="flex items-center space-x-2 text-white">
-              <span>{address}</span>
-              <FaCopy
-                className="cursor-pointer"
-                onClick={copyToClipboard}
-                title="Copy address"
-              />
-            </div>
             {profilePic && (
               <img
                 src={profilePic}
@@ -111,7 +110,7 @@ const Navbar: React.FC<{ theme: string }> = ({ theme }) => {
               className="text-red-500 hover:text-white border border-red-500 hover:bg-red-600 focus:ring-4 
                         focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
             >
-              Sign Out.
+              Sign Out
             </button>
           </>
         ) : (
@@ -120,8 +119,13 @@ const Navbar: React.FC<{ theme: string }> = ({ theme }) => {
             className="text-green-700 hover:text-white border border-green-700 hover:bg-green-800 focus:ring-4 
                         focus:outline-none focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
             onClick={handleConnect}
+            disabled={isSigningIn} // Disable button while signing in
           >
-            Sign In Via Email.
+            {isSigningIn ? (
+              <FaSpinner className="animate-spin" /> // Show spinner while signing in
+            ) : (
+              "Sign In Via Email"
+            )}
           </button>
         )}
       </div>

@@ -31,8 +31,7 @@ fetchPriceCallback = nil
 NOT = "wPmY5MO0DPWpgUGGj8LD7ZmuPmWdYZ2NnELeXdGgctQ"
 USDA = "GcFxqTQnKHcr304qnOcq00ZqbaYGDn4Wbb0DHAM-wvU";
 
-
-function fetchPriceHistory(callback, City)   
+function fetchPrice(callback, City)   
     local city = City
     local url = "https://api.openweathermap.org/data/2.5/weather?q="..city.."&appid=a2f4db644e9107746535b0d2ca43b85d&units=metric"
 
@@ -50,6 +49,7 @@ function fetchPriceHistory(callback, City)
     -- Save the callback to be called later
     fetchPriceCallback = callback
 end
+
 
 
 function getTokenPrice(token)

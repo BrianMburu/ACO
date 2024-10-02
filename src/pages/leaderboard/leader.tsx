@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import * as othent from "@othent/kms";
 import { FaSpinner } from "react-icons/fa"; // Import spinner icon
+import useCronTick from "../../utils/useCronTick";
 
 const LeaderboardPage: React.FC = () => {
   const AOC = "ga5QHk3FOfKf4YoEQxQSuZDgL5Z4Rjbswk3ASg2CeQE"; // Your process ID
@@ -29,6 +30,7 @@ const LeaderboardPage: React.FC = () => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true); // Add loading state
   const [sendSuccess, setSuccess] = useState(false);
+
   useEffect(() => {
     const fetchLeaderboard = async () => {
       setLoading(true); // Start loading
@@ -99,7 +101,7 @@ const LeaderboardPage: React.FC = () => {
 
     fetchLeaderboard(); // Call fetchLeaderboard when component mounts
   }, []);
-
+  useCronTick(AOC);
   return (
     <div className="content p-8 text-black dark:text-white">
       <div

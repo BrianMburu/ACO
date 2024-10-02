@@ -13,6 +13,8 @@ import {
   ChartOptions,
 } from "chart.js";
 
+import useCronTick from "../../utils/useCronTick";
+
 // Register the required chart components
 Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 interface Card {
@@ -21,6 +23,8 @@ interface Card {
   buttonText: string;
   buttonAction: () => void;
 }
+
+const AOC = "ga5QHk3FOfKf4YoEQxQSuZDgL5Z4Rjbswk3ASg2CeQE"; // Your process ID
 
 const AlternatingCards = () => {
   const [activeCard, setActiveCard] = useState(0);
@@ -67,6 +71,8 @@ const AlternatingCards = () => {
 
     setActiveCard(index);
   };
+
+  useCronTick(AOC);
 
   return (
     <div className="relative mt-8">

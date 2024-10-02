@@ -1,74 +1,46 @@
 import { useEffect } from "react";
 import { message, createDataItemSigner } from "@permaweb/aoconnect";
-
 import * as othent from "@othent/kms";
 
 const useCronTick = (process: string) => {
   useEffect(() => {
-    const checkExpiredContracts = async () => {
+    const performCronActions = async () => {
       try {
         const signer = createDataItemSigner(othent); // Create Othent signer
 
-        // Send message to check expired contracts
-        const messageResponse = await message({
+        // Step 1: Check expired contracts
+        const checkExpiredContracts = await message({
           process,
           tags: [{ name: "Action", value: "Cron" }],
-          signer, // Using Othent signer here
+          signer,
         });
+        console.log(
+          "Expired contracts checked successfully",
+          checkExpiredContracts
+        );
 
-        console.log("Expired contracts checked successfully", messageResponse);
-      } catch (error) {
-        console.error("Error checking expired contracts:", error);
-      }
-    };
-
-    const intervalId = setInterval(checkExpiredContracts, 100000); // Every minute
-
-    return () => clearInterval(intervalId);
-  }, [process]);
-
-  useEffect(() => {
-    const fetchPrice = async () => {
-      try {
-        const signer = createDataItemSigner(othent); // Create Othent signer
-
-        // Send message to fetch prices
-        const messageResponse = await message({
+        // Step 2: Fetch prices to complete trades
+        const completeTrade = await message({
           process,
           tags: [{ name: "Action", value: "completeTrade" }],
-          signer, // Using Othent signer here
+          signer,
         });
+        console.log("Trades completed successfully", completeTrade);
 
-        console.log("Trades completed successfully", messageResponse);
-      } catch (error) {
-        console.error("Error completing trade:", error);
-      }
-    };
-
-    const intervalId = setInterval(fetchPrice, 120000); // Every minute and 5 seconds
-
-    return () => clearInterval(intervalId);
-  }, [process]);
-
-  useEffect(() => {
-    const closePositions = async () => {
-      try {
-        const signer = createDataItemSigner(othent); // Create Othent signer
-
-        // Send message to close positions
-        const messageResponse = await message({
+        // Step 3: Close positions
+        const closePositions = await message({
           process,
           tags: [{ name: "Action", value: "Close-Positions" }],
-          signer, // Using Othent signer here
+          signer,
         });
-
-        console.log("Positions closed successfully", messageResponse);
+        console.log("Positions closed successfully", closePositions);
       } catch (error) {
-        console.error("Error closing positions:", error);
+        console.error("Error performing cron actions:", error);
       }
     };
 
-    const intervalId = setInterval(closePositions, 130000); // Every minute and 15 seconds
+    // Execute the actions sequentially every 100 seconds (adjust if needed)
+    const intervalId = setInterval(performCronActions, 1000000);
 
     return () => clearInterval(intervalId);
   }, [process]);
