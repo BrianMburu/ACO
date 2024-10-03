@@ -42,15 +42,15 @@ interface TradeDetails {
 
 const TradesTable: React.FC<{ trades: Trade[], tabletype: string }> = ({ trades, tabletype }) => {
     return (
-        <div className='w-full p-8 border border-neutral-700 rounded-lg mb-8' style={{
+        <div className='w-full px-4 md:px-8 py-8 border border-neutral-700 rounded-lg mb-8' style={{
             background: tabletype === "open" ?
                 'linear-gradient(to top left, rgba(135, 206, 250, 0.2), rgba(135, 206, 250, 0))' :
                 'linear-gradient(to top left, rgba(250, 178, 133, 0.2), rgba(135, 206, 250, 0))'
         }}>
-            <h3 className="w-full text-xl font-bold mb-5 text-center">{tabletype === "open" ? "Open Trades" : "Closed Trades"}</h3>
+            <h3 className="w-full text-lg md:text-xl font-bold mb-5 text-center">{tabletype === "open" ? "Open Trades" : "Closed Trades"}</h3>
             <div className='max-w-full overflow-x-auto'>
                 <div className='w-full table '>
-                    <div className='table-header-group'>
+                    <div className='table-header-group text-md lg-text-xl'>
                         <div className='table-cell text-left border border-neutral-700 px-3 py-4 rounded-tl-md'>ProcessId</div>
                         <div className='table-cell text-left border border-neutral-700 px-3 py-4'>Country</div>
                         <div className='table-cell text-left border border-neutral-700 px-3 py-4'>City</div>
@@ -65,7 +65,7 @@ const TradesTable: React.FC<{ trades: Trade[], tabletype: string }> = ({ trades,
                         <div className='table-cell text-left border border-neutral-700 px-3 py-4'>Payout</div>
                         <div className='table-cell text-left border border-neutral-700 px-3 py-4 rounded-tr-md'>Outcome</div>
                     </div>
-                    <div className='table-row-group'>
+                    <div className='table-row-group text-sm lg:text-md'>
                         {trades.map((trade: Trade, index: number) => (
                             <div className='table-row' key={index}>
                                 <div className='table-cell text-left border border-neutral-700 px-3 py-4'>{trade.UserId.substring(0, 8)}</div>
@@ -269,7 +269,7 @@ const TradesAnalysisPage: React.FC = (() => {
     }, []);
 
     return (
-        <div className="content p-8 text-black dark:text-white">
+        <div className="content py-8  px-1 md:px-8 text-black dark:text-white">
             < TradesTable trades={opentrades} tabletype='open' />
             < TradesTable trades={closedtrades} tabletype='close' />
         </div>

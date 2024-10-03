@@ -14,7 +14,7 @@ import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import { PermissionType } from "arconnect";
 
 import useCronTick from "../../utils/useCronTick";
-import OverviewSection from "../walletOverview/WalletOverview"
+import OverviewSection from "../../components/walletOverview/WalletOverview"
 import Map from "../../components/map/Map"
 
 interface HistoricalData {
@@ -72,6 +72,7 @@ const ChartComponent: React.FC<{
     lat: number, lng: number
 }> = ({ selectedOptions, timeRange, lat, lng }) => {
     const [chartData, setChartData] = useState<HistoricalData | null>(null);
+    // const [chartColors, setChartColors] = useState<string[]>([]);
 
     // Function to fetch Weather historical data
     const fetchHistoricalData = async (latitude: number, longitude: number): Promise<HistoricalData | null> => {
@@ -187,6 +188,7 @@ const ChartComponent: React.FC<{
 
     const chartOptions: ChartOptions<'line'> = {
         responsive: true,
+        maintainAspectRatio: false,
         scales: {
             x: {
                 type: 'time',
@@ -458,39 +460,39 @@ const AoClimaOptions: React.FC = () => {
     }
 
     return (
-        <div className={classNames("content text-black dark:text-white")}>
+        <div className={classNames("content")}>
             {/* Add the new Overview Section */}
             <OverviewSection aocBalance={aocBalance} />
 
-            <div className="p-8 pt-0">
-                <div className="pb-4 text-xl font-semibold text-white">
+            <div className="">
+                <div className="p-4 md:px-8 pb-4 text-lg md:text-xl font-semibold text-white">
                     <h2>Select Location to Predict from the Map:</h2>
                 </div>
                 {/* Map and Call/Put buttons */}
-                <div className="relative rounded-lg overflow-hidden text-white dark:text-blue-700 font-semibold">
+                <div className="px-1 md:px-8 relative rounded-lg overflow-hidden text-white dark:text-blue-700 font-semibold">
                     <Map lat={lat!} lng={lng!} setLat={setLat} setLng={setLng} />
                 </div>
 
                 {/* Multiselect Input for the Chart */}
-                <div className="flex w-full justify-between flex-wrap-reverse lg:space-x-4 sm:space-x-0 mt-8 weather-options">
-                    <div className="sm:w-100 lg:w-1/2 max-w-1/2">
-                        <label className="block mb-2 text-xl text-white font-semibold">Select Weather Data:</label>
+                <div className="px-8 flex lw-full justify-between items-center flex-wrap-reverse lg:space-x-4 sm:space-x-0 mt-8 weather-options">
+                    <div className="w-100 lg:w-1/2 my-2">
+                        <label className="block mb-2 text-lg md:text-xl text-white font-semibold">Select Weather Data:</label>
                         <Select
                             isMulti
                             options={weatherOptions}
                             defaultValue={selectedOptions}
                             onChange={handleSelectChange}
-                            className="bg-gray-900 dark:bg-black text-black dark:text-white"
+                            className="text-black text-sm md:text-lg"
                             placeholder="Select weather metrics..."
                         />
                     </div>
-                    <div className="sm:w-50 lg:w-1/3 max-w-1/2">
-                        <label className="block mb-2 text-xl text-white font-semibold">Select Time Range:</label>
+                    <div className="w-50 lg:w-1/3 my-2">
+                        <label className="block mb-2 text-lg md:text-xl text-white font-semibold">Select Time Range:</label>
                         <Select
                             options={timeRanges}
                             defaultValue={selectedTimeRange}
                             onChange={handleTimeRangeChange}
-                            className="bg-gray-900 dark:bg-black text-black dark:text-white"
+                            className="text-black text-sm md:text-lg"
                             placeholder="Select weather metrics..."
                         />
                     </div>
@@ -498,33 +500,35 @@ const AoClimaOptions: React.FC = () => {
                 </div>
 
                 {/* Graph Section */}
-                <div className="overflow-x-auto mt-8">
-                    <div className="h-500px w-full shadow-lg p-6 bg-gradient-to-tl rounded-lg"
+                <div className="pb-8 px-1 md:px-8 overflow-x-auto mt-8">
+                    <div className="w-full shadow-lg py-6 md:px-6 bg-gradient-to-tl rounded-lg"
                         style={{ background: 'linear-gradient(to top left, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0))' }}>
                         {/* <h2 className="text-xl font-semibold mb-4">Weather Analysis</h2> */}
                         {/* Call and Put buttons */}
-                        <div className='trade-card flex flex-col space-y-4 sm:w-1/3 md:w-1/3 lg:w-1/5'>
+                        <div className='trade-card pl-4 md:pl-0 flex flex-col space-y-4 min-w-32 w-1/2 md:w-1/3 lg:w-1/4 mb-4 '>
                             <div className="relative rounded-md shadow-sm">
                                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                    <span className="text-gray-500 sm:text-sm">$</span>
+                                    <span className="text-gray-500 text-sm">$</span>
                                 </div>
                                 <input type="number" name="betAmount" id="amount" className="w-full block rounded-md border-0 py-1.5 pl-7 text-white ring-1 ring-inset ring-gray-300 
                                 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="USDA Amount"
                                     value={betAmount} onChange={handleInputChange}>
                                 </input>
                             </div>
-                            <div className='flex space-x-3 justify-center'>
-                                <button className="top-3 w-1/2 left-3 bg-green-500 text-white lg:text-sm px-3 py-2 rounded-md opacity-80 hover:opacity-100"
+                            <div className='flex space-x-3 justify-center text-xs md:text-sm'>
+                                <button className="w-1/2 bg-green-500 text-white  p-1 md:p-2 rounded-md opacity-80 hover:opacity-100"
                                     onClick={() => trade("Call")}>
                                     Buy Higher
                                 </button>
-                                <button className="top-3 w-1/2 left-20 bg-red-500 text-white lg:text-sm px-3 py-2 rounded-md opacity-80 hover:opacity-100"
+                                <button className="w-1/2 bg-red-500 text-white p-1 md:p-2 rounded-md opacity-80 hover:opacity-100"
                                     onClick={() => trade("Put")}>
                                     Buy Lower
                                 </button>
                             </div>
                         </div>
-                        <ChartComponent selectedOptions={selectedOptions} timeRange={selectedTimeRange} lat={lat!} lng={lng!} />
+                        <div className='px-1 md:p-0 h-80 md:min-h-96 md:h-auto'>
+                            <ChartComponent selectedOptions={selectedOptions} timeRange={selectedTimeRange} lat={lat!} lng={lng!} />
+                        </div>
                     </div>
 
                 </div>

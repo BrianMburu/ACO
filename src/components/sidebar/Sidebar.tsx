@@ -11,16 +11,11 @@ interface SidebarBarProps {
   updateTheme: (theme: string) => void,
   activeIndex: number,
   updateActiveIndex: (activeIndex: number) => void,
+  isCollapsed: boolean,
 }
 
-const Sidebar: React.FC<SidebarBarProps> = ({ theme, updateTheme, activeIndex, updateActiveIndex }) => {
-  // const [activeIndex, setActiveIndex] = useState(0);
-  const [isCollapsed, setIsCollapsed] = useState(true);
+const Sidebar: React.FC<SidebarBarProps> = ({ theme, updateTheme, activeIndex, updateActiveIndex, isCollapsed }) => {
   const navigate = useNavigate();
-
-  const handleCollapseToggle = () => {
-    setIsCollapsed(!isCollapsed);
-  };
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
@@ -31,30 +26,22 @@ const Sidebar: React.FC<SidebarBarProps> = ({ theme, updateTheme, activeIndex, u
   };
 
   const menuItems = [
-    { icon: <HomeIcon className="size-5" />, tooltip: 'Home' },
-    { icon: <Squares2X2Icon className="size-5" />, tooltip: 'Apps' },
-    { icon: <ChartBarIcon className="size-5" />, tooltip: 'Analysis' },
+    { icon: <HomeIcon className="size-4 md:size-5" />, tooltip: 'Home' },
+    { icon: <Squares2X2Icon className="size-4 md:size-5" />, tooltip: 'Apps' },
+    { icon: <ChartBarIcon className="size-4 md:size-5" />, tooltip: 'Analysis' },
     { icon: <FaWallet size="20" />, tooltip: 'Wallet' },
   ];
 
   return (
-    <div className={classNames("h-screen flex flex-col justify-between text-white shadow-lg border-r border-r-neutral-700 transition-all duration-300", {
-      'w-20 bg-black': isCollapsed && theme === 'dark',
-      'w-40 bg-black': !isCollapsed && theme === 'dark',
-      'w-20 bg-gray-900': isCollapsed && theme === 'light',
-      'w-40 bg-gray-900': !isCollapsed && theme === 'light',
+    <div className={classNames("sidebar h-screen md:flex flex-col w-15 md:w-20 justify-between text-white shadow-lg border-r border-r-neutral-700 transition-colors duration-300 ease-in-out", {
+      "hidden": isCollapsed,
+      "flex": !isCollapsed,
+      'bg-black': theme === 'dark',
+      'bg-gray-900': theme === 'light',
     })}>
-      <div>
-        <div className="pt-4 pb-4 pl-3 pr-3 flex items-center justify-center">
+      <div className='flex flex-col'>
+        <div className="py-3 px-2 md:py-4 md:px-3 flex items-center justify-center">
           <img className="logo" src='Aco-logo.svg' alt='ACO logo' />
-
-          {/* <button onClick={handleCollapseToggle} className="p-2">
-                        {isCollapsed ?
-                            <ArrowRightIcon className='size-5 text-white ' /> :
-                            <ArrowLeftIcon className='size-5 text-red' />
-                        }
-                    </button> */}
-
         </div>
         <div className="flex-grow flex flex-col items-center space-y-2">
           {menuItems.map((item, index) => (
@@ -63,7 +50,6 @@ const Sidebar: React.FC<SidebarBarProps> = ({ theme, updateTheme, activeIndex, u
               icon={item.icon}
               tooltip={item.tooltip}
               isActive={index === activeIndex}
-              isCollapsed={isCollapsed}
               theme={theme}
               onClick={() => {
                 updateActiveIndex(index);
@@ -76,13 +62,17 @@ const Sidebar: React.FC<SidebarBarProps> = ({ theme, updateTheme, activeIndex, u
         </div>
       </div>
       <div>
-        <div className="p-5 flex items-center justify-center">
+        <div className="py-3 px-2 flex items-center justify-center">
           {/* Add lightmode dark mode toggle shitch here */}
           <button
             onClick={toggleTheme}
-            className="flex items-center justify-center p-2 bg-neutral-700 text-white rounded-full transition-colors duration-300"
+            className={classNames("flex items-center justify-center p-2 bg-neutral-700- text-white rounded-full transition-colors duration-300",
+              {
+                "border border-amber-400 text-amber-400": theme == 'light',
+                "border border-neutral-400 text-neutral-300": theme == 'dark'
+              })}
           >
-            {theme === 'dark' ? <SunIcon className='size-5' /> : <MoonIcon className='size-5' />}
+            {theme === 'light' ? <SunIcon className='size-4 md:size-5' /> : <MoonIcon className='size-4 md:size-5' />}
           </button>
         </div>
       </div>
@@ -94,42 +84,19 @@ interface SidebarIconProps {
   icon: JSX.Element;
   tooltip: string;
   isActive: boolean;
-  isCollapsed: boolean;
   theme: string;
   onClick: () => void;
 }
 
-// const SidebarIcon: React.FC<SidebarIconProps> = ({ icon, tooltip, isActive, isCollapsed, onClick }) => (
-//     <div
-//         onClick={onClick}
-//         className={classNames(
-//             "sidebar-icon group relative flex items-center justify-center w-full p-2 transition-colors duration-300 cursor-pointer",
-//             {
-//                 'bg-gray-700': isActive,
-//                 'hover:bg-gray-700': !isActive,
-//             }
-//         )}
-//     >
-//         {icon}
-//         {!isCollapsed && (
-//             <span className="ml-4">{tooltip}</span>
-//         )}
-//         {isCollapsed && (
-//             <div className="absolute left-full top-1/2 transform -translate-y-1/2 bg-gray-700 text-white text-xs rounded-lg px-2 py-1 whitespace-nowrap shadow-lg">
-//                 {tooltip}
-//             </div>
-//         )}
-//     </div>
-// );
-
-const SidebarIcon: React.FC<SidebarIconProps> = ({ icon, tooltip, isActive, isCollapsed, theme, onClick }) => (
+const SidebarIcon: React.FC<SidebarIconProps> = ({ icon, tooltip, isActive, theme, onClick }) => (
   <div
     onClick={onClick}
     className={classNames(
-      "sidebar-icon group relative flex items-center justify-center rounded-lg w-full_ p-3 transition-colors duration-300 cursor-pointer",
+      "sidebar-icon group relative flex items-center justify-center rounded-lg p-2 md:p-3 transition-colors duration-300 cursor-pointer",
       {
-        'bg-neutral-700': isActive && theme === 'dark',
-        'bg-neutral-500': isActive && theme === 'light',
+        "border border-amber-400 text-amber-300": isActive,
+        // 'bg-neutral-200': isActive && theme === 'dark',
+        // 'bg-neutral-500': isActive && theme === 'light',
         'hover:bg-neutral-700': !isActive && theme === 'dark',
         'hover:bg-neutral-500': !isActive && theme === 'light',
       }
@@ -138,9 +105,6 @@ const SidebarIcon: React.FC<SidebarIconProps> = ({ icon, tooltip, isActive, isCo
     data-tooltip-content={tooltip}
   >
     {icon}
-    {!isCollapsed && (
-      <span className="ml-4">{tooltip}</span>
-    )}
     <Tooltip id={tooltip} place="right" variant="dark" className="solid" />
   </div>
 );

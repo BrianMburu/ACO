@@ -6,7 +6,7 @@ import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import { PermissionType } from "arconnect";
 import axios from "axios";
 
-import OverviewSection from "../walletOverview/WalletOverview"
+import OverviewSection from "../../components/walletOverview/WalletOverview"
 import Map from "../../components/map/Map"
 
 interface Tag {
@@ -219,33 +219,38 @@ const AoWeatherAgent: React.FC = () => {
     }, []);
 
     return (
-        <div className="content text-black dark:text-white">
+        <div className="content">
             {/* Add the new Overview Section */}
             <OverviewSection aocBalance={aocBalance} />
 
-            <div className="p-8">
-                <div className="relative rounded-lg overflow-hidden">
+            <div className="">
+                <div className="p-4 md:px-8 pb-4 text-lg md:text-xl font-semibold text-white">
+                    <h2>Select Location to Predict from the Map:</h2>
+                </div>
+
+                <div className="relative rounded-lg overflow-hidden px-1 md:px-8">
                     {/* Leaflet Map */}
                     <Map lat={lat!} lng={lng!} setLat={setLat} setLng={setLng} />
                 </div>
 
-                <div className="mt-8 max-w-1/2">
-                    <div className="p-5 border border-gray-700 flex justify-center mb-5">
-                        <h1>Disclaimer!</h1>
-                        <p>AO Weather Agent is still in development. Use with caution.</p>
+                <div className="mt-8 px-4 md:px-8">
+
+                    <div className="p-5 border border-gray-700 text-center mb-5">
+                        <h1 className="font-extrabold text-xl md:text-xxl">Disclaimer!</h1>
+                        <span>AO Weather Agent is still in development. Use with caution.</span>
                     </div>
+
                     <div className="mb-5 flex px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-700">
                         <textarea id="message" rows={4} className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 
-                    focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 
-                    dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 
+                            dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             placeholder="Write your plans today ..."
                             value={activities}
                             onChange={(e) => setActivities(e.target.value)}></textarea>
                         <div className="flex ml-4 flex-col justify-end ">
-                            <button type="submit" className="inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-blue-100 dark:text-blue-500 dark:hover:bg-gray-600"
+                            <button type="button" className="inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-blue-100 dark:text-blue-500 dark:hover:bg-gray-600"
                                 onClick={handleCheck}>
                                 <PaperAirplaneIcon className="w-8 h-8" />
-                                <span className="sr-only">Send message</span>
                             </button>
                         </div>
                     </div>

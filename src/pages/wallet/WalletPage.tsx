@@ -4,7 +4,7 @@ import axios from "axios";
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import { PermissionType } from "arconnect";
 
-import OverviewSection from "../walletOverview/WalletOverview"
+import OverviewSection from "../../components/walletOverview/WalletOverview"
 
 
 const WalletPage: React.FC = (() => {
@@ -328,75 +328,78 @@ const WalletPage: React.FC = (() => {
         <div className="content text-black dark:text-white">
             <OverviewSection aocBalance={aocBalance} />
 
-            <div className='p-8 pt-0'>
-                <div className='w-full flex items-center justify-between text-white p-6 mb-8 shadow-lg border border-neutral-700 rounded-lg'>
-                    <div className='flex flex-col space-y-4'>
-                        <div className="relative rounded-md shadow-sm">
-                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                <span className="text-gray-500 sm:text-sm">$</span>
-                            </div>
-                            <input type="number" name="depositAmount" id="amount" className="w-full block rounded-md border-0 py-1.5 pl-7 text-white ring-1 ring-inset ring-gray-300 
+            <div className='md:p-8 pt-0'>
+                <div className='px-3 md:px-0'>
+                    <div className='w-full flex items-center justify-between text-white p-6 mb-8 shadow-lg border border-neutral-700 rounded-lg space-x-5'>
+                        <div className='flex flex-col space-y-4'>
+                            <div className="relative rounded-md shadow-sm">
+                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <span className="text-gray-500 sm:text-sm">$</span>
+                                </div>
+                                <input type="number" name="depositAmount" id="amount" className="w-full block rounded-md border-0 py-1.5 pl-7 text-white ring-1 ring-inset ring-gray-300 
                                 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="USDA Amount"
-                                value={depositAmount} onChange={handleInputChange}>
-                            </input>
-                        </div>
-                        <div className='flex justify-center'>
-                            <button className="w-full top-3 left-3 bg-green-500 text-white px-4 py-3 rounded-md opacity-80 hover:opacity-100"
-                                onClick={deposit}>
-                                Deposit
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className='flex flex-col space-y-4'>
-                        <div className="relative rounded-md shadow-sm">
-                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                <span className="text-gray-500 sm:text-sm">$</span>
+                                    value={depositAmount} onChange={handleInputChange}>
+                                </input>
                             </div>
-                            <input type="number" name="withdrawAmount" id="amount" className="w-full block rounded-md border-0 py-1.5 pl-7 text-white ring-1 ring-inset ring-gray-300 
+                            <div className='flex justify-center'>
+                                <button className="w-full top-3 left-3 bg-green-500 text-white px-3 py-2 md:px-4 md:py-3 rounded-md opacity-80 hover:opacity-100 text-xs md:text-md"
+                                    onClick={deposit}>
+                                    Deposit
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className='flex flex-col space-y-4'>
+                            <div className="relative rounded-md shadow-sm">
+                                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                    <span className="text-gray-500 text-sm">$</span>
+                                </div>
+                                <input type="number" name="withdrawAmount" id="amount" className="w-full block rounded-md border-0 py-1.5 pl-7 text-white ring-1 ring-inset ring-gray-300 
                                 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6" placeholder="USDA Amount"
-                                value={withdrawAmount} onChange={handleInputChange}>
-                            </input>
-                        </div>
-                        <div className='flex justify-center'>
-                            <button className="w-full top-3 left-3 bg-red-500 text-white px-4 py-3 rounded-md opacity-80 hover:opacity-100"
-                                onClick={withdraw}>
-                                Withdraw
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div className='w-full p-8 border border-neutral-700 rounded-lg overflow-hidden' style={{
-                    background: 'linear-gradient(to top left, rgba(135, 206, 250, 0.2), rgba(135, 206, 250, 0))'
-                }}>
-                    <h3 className="w-full text-xl font-bold mb-5 text-center">Your Transaction History</h3>
-                    <div className='max-w-full overflow-x-auto'>
-                        <div className='table w-full'>
-                            <div className='table-header-group'>
-                                <div className='table-cell text-left border border-neutral-700 p-3 rounded-tl-md'>tId</div>
-                                <div className='table-cell text-left border border-neutral-700 p-3'>User</div>
-                                <div className='table-cell text-left border border-neutral-700 p-3'>Amount</div>
-                                <div className='table-cell text-left border border-neutral-700 p-3'>Type</div>
-                                <div className='table-cell text-left border border-neutral-700 p-3'>Balance</div>
-                                <div className='table-cell text-left border border-neutral-700 p-3 rounded-tr-md'>Timestamp</div>
+                                    value={withdrawAmount} onChange={handleInputChange}>
+                                </input>
                             </div>
-                            <div className='table-row-group'>
-                                {transactionlist.map((transaction, index) => (
-                                    <div className='table-row' key={index}>
-                                        <div className='table-cell text-left border border-neutral-700 p-3'>{transaction.transactionid}</div>
-                                        <div className='table-cell text-left border border-neutral-700 p-3'>{transaction.user.substring(0, 8)}</div>
-                                        <div className='table-cell text-left border border-neutral-700 p-3'>{transaction.amount}</div>
-                                        <div className='table-cell text-left border border-neutral-700 p-3'>{transaction.type}</div>
-                                        <div className='table-cell text-left border border-neutral-700 p-3'>{transaction.balance}</div>
-                                        <div className='table-cell text-left border border-neutral-700 p-3'>{transaction.timestamp}</div>
-                                    </div>
-                                ))}
+                            <div className='flex justify-center'>
+                                <button className="w-full bg-red-500 text-white px-3 py-2 md:px-4 md:py-3 rounded-md opacity-80 hover:opacity-100 text-xs md:text-md"
+                                    onClick={withdraw}>
+                                    Withdraw
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                <div className='px-1 md:px-0'>
+                    <div className='w-full px-4 md:px-8 py-8 border border-neutral-700 rounded-lg overflow-hidden' style={{
+                        background: 'linear-gradient(to top left, rgba(135, 206, 250, 0.2), rgba(135, 206, 250, 0))'
+                    }}>
+                        <h3 className="w-full text-lg md:text-xl font-bold mb-5 text-center">Your Transaction History</h3>
+                        <div className='max-w-full overflow-x-auto'>
+                            <div className='table w-full'>
+                                <div className='table-header-group text-md lg-text-xl'>
+                                    <div className='table-cell text-left border border-neutral-700 p-3 rounded-tl-md'>tId</div>
+                                    <div className='table-cell text-left border border-neutral-700 p-3'>User</div>
+                                    <div className='table-cell text-left border border-neutral-700 p-3'>Amount</div>
+                                    <div className='table-cell text-left border border-neutral-700 p-3'>Type</div>
+                                    <div className='table-cell text-left border border-neutral-700 p-3'>Balance</div>
+                                    <div className='table-cell text-left border border-neutral-700 p-3 rounded-tr-md'>Timestamp</div>
+                                </div>
+                                <div className='table-row-group text-sm lg:text-md'>
+                                    {transactionlist.map((transaction, index) => (
+                                        <div className='table-row' key={index}>
+                                            <div className='table-cell text-left border border-neutral-700 p-3'>{transaction.transactionid}</div>
+                                            <div className='table-cell text-left border border-neutral-700 p-3'>{transaction.user.substring(0, 8)}</div>
+                                            <div className='table-cell text-left border border-neutral-700 p-3'>{transaction.amount}</div>
+                                            <div className='table-cell text-left border border-neutral-700 p-3'>{transaction.type}</div>
+                                            <div className='table-cell text-left border border-neutral-700 p-3'>{transaction.balance}</div>
+                                            <div className='table-cell text-left border border-neutral-700 p-3'>{transaction.timestamp}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     )
