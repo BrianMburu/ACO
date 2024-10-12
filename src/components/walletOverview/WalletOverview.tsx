@@ -1,6 +1,7 @@
 import React from 'react';
 
-import { FaWallet } from 'react-icons/fa';
+import { FaWallet, FaCopy } from 'react-icons/fa';
+import { Tooltip } from 'react-tooltip';
 
 interface OverviewProps {
   aocBalance: number;
@@ -9,7 +10,13 @@ interface OverviewProps {
 
 const OverviewSection: React.FC<OverviewProps> = ({ aocBalance, usdaBalance }) => {
   const walletAddress = localStorage.getItem('walletAddress');
-
+  // Copy address to clipboard function
+  const copyToClipboard = async () => {
+    if (walletAddress) {
+      await navigator.clipboard.writeText(walletAddress);
+      alert("Address copied to clipboard!");
+    }
+  };
   return (
     <div className="w-full text-white p-2 sm:p-6 mb-4 md:mb-8 flex flex-col sm:flex-row justify-center sm:justify-between lg:items-center shadow-lg border-b border-b-neutral-700">
       {/* Left Section - Wallet Info */}
@@ -20,10 +27,22 @@ const OverviewSection: React.FC<OverviewProps> = ({ aocBalance, usdaBalance }) =
         <div className='tems-start text-start'>
           <p className="text-gray-400 text-sm">Your Wallet / Balance</p>
           <div className="flex items-center space-x-2">
-            <h2 className="text-xl font-semibold">{walletAddress ?
-              `${walletAddress.substring(0, 5)}...${walletAddress.substring(walletAddress.length - 3)}` : ""}
+            <h2 className="text-xl flex space-x-2 items-center font-semibold">{walletAddress ?
+              <>
+                <span>{`${walletAddress.substring(0, 5)}...${walletAddress.substring(walletAddress.length - 3)}`}</span>
+                <div
+                  data-tooltip-id={"copyAddress"}
+                  data-tooltip-content={"Copy Address"}>
+                  <FaCopy
+                    className="cursor-pointer hover:text-amber-500 size-3 md:size-4"
+                    onClick={copyToClipboard}
+                  />
+                  <Tooltip id={"copyAddress"} place="bottom" variant="dark" className="solid" />
+                </div>
+              </>
+              : ""}
             </h2>
-            <div className="flex space-x-3 mt-2">
+            <div className="flex space-x-3 items-center mt-2">
               <span className="text-green-400 text-xs md:text-sm lg:text-md font-bold">
                 AOC: {aocBalance.toFixed(4)}
               </span>
