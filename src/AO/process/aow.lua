@@ -8,39 +8,15 @@ _0RBIT = "BaMK1dfayo75s3q1ow6AO64UDpD9SEFbeE8xYrY2fyQ"
 _0RBT_TOKEN = "BUhZLMwQ6yZHguLtJYA5lLUa9LQzLXMXRfaq9FVcPJc"
 FEE_AMOUNT = "1000000000000" -- 1 $0RBT
 
--- Callback function for fetch price
 fetchPriceCallback = nil
-ReceivedDataHistory = ReceivedDataHistory or {}
+ReceivedDataForecast = ReceivedDataForecast or {}
 RECO_HISTORY = RECO_HISTORY or {}
 
-
-function fetchClimateHistorical(callback, Latitude, Longitude)
-    local latitude = Latitude
-    local longitude = Longitude
-    local url = "https://archive-api.open-meteo.com/v1/archive?latitude=" ..
-    latitude ..
-    "&longitude=" ..
-    longitude ..
-    "&start_date=2017-08-22&end_date=2024-09-10&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation"
-    Send({
-        Target = _0RBT_TOKEN,
-        Action = "Transfer",
-        Recipient = _0RBIT,
-        Quantity = FEE_AMOUNT,
-        ["X-Url"] = url,
-        ["X-Action"] = "Get-Real-Data"
-    })
-
-    print("GET Request sent to the 0rbit process for Historical Data.")
-
-    -- Save the callback to be called later
-    fetchPriceCallback = callback
-end
-
+-- Function to fetch forecast data
 function fetchClimateForecast(callback, Latitude, Longitude)
     local latitude = Latitude
     local longitude = Longitude
-    local url = "https://api.open-meteo.com/v1/forecast?latitude="..latitude.."&longitude="..longitude.."&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation_probability,precipitation,rain,showers,snowfall,snow_depth&forecast_days=1"
+    local url = "https://api.open-meteo.com/v1/forecast?latitude="..latitude.."&longitude="..longitude.."&hourly=temperature_2m,relative_humidity_2m,dew_point_2m,apparent_temperature,precipitation,rain,showers,snowfall,snow_depth&forecast_days=2"
     Send({
         Target = _0RBT_TOKEN,
         Action = "Transfer",
@@ -49,114 +25,75 @@ function fetchClimateForecast(callback, Latitude, Longitude)
         ["X-Url"] = url,
         ["X-Action"] = "Get-Real-Data"
     })
-
-    print("GET Request sent to the 0rbit process for Forecast Data.")
-
-    -- Save the callback to be called later
+    print("GET Request sent for Forecast Data.")
     fetchPriceCallback = callback
 end
 
+-- Helper to create prompt
 function CreatePrompt(systemPrompt, userContent)
-    return [[<|system|>
-]] .. systemPrompt .. [[<|end|>
-<|user|>
-]] .. userContent .. [[<|end|>
-<|assistant|>
-]]
+    return [[<|system|>]] .. systemPrompt .. [[<|end|>
+<|user|>]] .. userContent .. [[<|end|>
+<|assistant|>]]
 end
 
--- Handlers for receiving data
-Handlers.add(
-    "Receive-Historical",
-    Handlers.utils.hasMatchingTag("Action", "Receive-Response"),
-    function(msg)
-        local res = json.decode(msg.Data)
-        ReceivedDataHistory = res
-        print("Historical Data received from the 0rbit process.")
+-- Function to process forecast data
+function processForecastData(Activities)
+    if next(ReceivedDataForecast) then
+        local userContent = "Forecasted Data: " .. json.encode(ReceivedDataForecast) .. " | Activities: " .. Activities
+
+        local prompt = CreatePrompt(
+            "Analyse the weather data and give 2 recommendations based on the activities.",
+            userContent
+        )
+
+        -- Run Llama analysis and get recommendations
+        Llama.run(
+            prompt,
+            10,
+            function(generated_text)
+                if not generated_text then
+                    return print("No recommendations.")
+                end
+
+                print("Recommendation: " .. generated_text)
+                table.insert(RECO_HISTORY, generated_text)
+
+                -- Notify the user that recommendations have been received
+                ao.send({ Data = "Recommendation: " .. generated_text })
+            end
+        )
+    else
+        print("Forecast data not available.")
     end
-)
+end
 
+-- Handler for fetching forecast data
 Handlers.add(
-    "Receive-Forecast",
-    Handlers.utils.hasMatchingTag("Action", "Receive-Response"),
-    function(msg)
-        local res = json.decode(msg.Data)
-        ReceivedDataForecast = res
-        print("Forecast Data received from the 0rbit process.")
-    end
-)
-
-
-Handlers.add(
-    "fetchHistorical",
-    Handlers.utils.hasMatchingTag("Action", "fetchHistorical"),
-    function(m)
-        if m.Tags.Latitude and m.Tags.Longitude then
-            local Latitude = m.Tags.Latitude
-            local Longitude = m.Tags.Longitude
-            -- Fetch historical data
-            fetchClimateHistorical(function() 
-                ao.send({ Target = ao.id, Action = "fetchForecast", Latitude = Latitude, Longitude = Longitude }) 
-            end, Latitude, Longitude)
-
-            print("Fetching Historical Data...")
-        end
-    end
-)
-
-Handlers.add(
-    "fetchForecast",
+    "fetchForecastData",
     Handlers.utils.hasMatchingTag("Action", "fetchForecast"),
     function(m)
         if m.Tags.Latitude and m.Tags.Longitude then
             local Latitude = m.Tags.Latitude
             local Longitude = m.Tags.Longitude
-            -- Fetch forecast data
-            fetchClimateForecast(function() 
-                ao.send({ Target = ao.id, Action = "processData", Latitude = Latitude, Longitude = Longitude, Activities = m.Tags.Activities }) 
-            end, Latitude, Longitude)
 
-            print("Fetching Forecast Data...")
+            fetchClimateForecast(function()
+                print("Forecast data fetched.")
+            end, Latitude, Longitude)
         end
     end
 )
+
+-- Handler for processing forecast data and prompting LLM
 Handlers.add(
-    "processData",
+    "processForecastData",
     Handlers.utils.hasMatchingTag("Action", "processData"),
     function(m)
-            
-            local Historical = ReceivedDataHistory
-            local Activities = m.Tags.Activities
-            
-            local userContent = "It is going to rain at 4pm"
+        if ReceivedDataForecast then
+            local Activities = m.Tags.Activities or "No activities provided"
 
-            local prompt = CreatePrompt(
-                "Analyse the weather data and give 2 recommendations based on the activities.",
-                userContent)
-
-            Llama.run(
-                prompt,                  -- Your prompt
-                70,                      -- Number of tokens to generate
-                function(generated_text) -- Optional: A function to handle the response
-                    local reco = generated_text
-                    if not reco then
-                        return print("Could not find any recommendations.")
-                    end
-                    print("Recommendation: " .. reco)
-                    table.insert(RECO_HISTORY, reco)
-                    ao.send({ Target = m.From, Data = "Recommendation: " .. reco })
-                end
-            )
-    end
-)
-
-Handlers.add(
-    "check",
-    Handlers.utils.hasMatchingTag("Action", "check"),
-    function(m)
-        if m.Tags.Latitude and m.Tags.Longitude and m.Tags.Activities then
-            -- Start by fetching historical data
-            ao.send({ Target = ao.id, Action = "processData", Latitude = m.Tags.Latitude, Longitude = m.Tags.Longitude})
+            processForecastData(Activities)
+        else
+            print("Forecast data not available.")
         end
     end
 )

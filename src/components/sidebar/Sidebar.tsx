@@ -1,10 +1,18 @@
-import './Sidebar.css'
-import React, { useState, useEffect, } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FaWallet } from 'react-icons/fa';
-import { Squares2X2Icon, ChartBarIcon, HomeIcon, ArrowLeftIcon, ArrowRightIcon, SunIcon, MoonIcon } from '@heroicons/react/24/outline'
-import { Tooltip } from 'react-tooltip';
-import classNames from 'classnames';
+import "./Sidebar.css";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaWallet } from "react-icons/fa";
+import {
+  Squares2X2Icon,
+  ChartBarIcon,
+  HomeIcon,
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  SunIcon,
+  MoonIcon, TrophyIcon
+} from "@heroicons/react/24/outline";
+import { Tooltip } from "react-tooltip";
+import classNames from "classnames";
 
 interface SidebarBarProps {
   theme: string,
@@ -29,7 +37,8 @@ const Sidebar: React.FC<SidebarBarProps> = ({ theme, updateTheme, activeIndex, u
     { icon: <HomeIcon className="size-4 md:size-5" />, tooltip: 'Home' },
     { icon: <Squares2X2Icon className="size-4 md:size-5" />, tooltip: 'Apps' },
     { icon: <ChartBarIcon className="size-4 md:size-5" />, tooltip: 'Analysis' },
-    { icon: <FaWallet size="20" />, tooltip: 'Wallet' },
+    { icon: <TrophyIcon className="size-4 md:size-5" />, tooltip: "LeaderBoard" },
+    { icon: <FaWallet className="size-4 md:size-5" />, tooltip: 'Wallet' },
   ];
 
   return (

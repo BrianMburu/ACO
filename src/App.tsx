@@ -1,16 +1,17 @@
-import { useState, useEffect } from 'react'
-import './App.css'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useState, useEffect } from "react";
+import "./App.css";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import Sidebar from './components/sidebar/Sidebar';
-import Navbar from './components/navbar/Navbar';
-import Home from './pages/home/Home';
-import AppsPage from './pages/apps/AppsPage';
-import AoClimaOptions from './pages/climaOptions/AoClimaOptions';
-import AoWeatherAgent from './pages/weatherAgent/AoWeatherAgent';
-import WalletPage from './pages/wallet/WalletPage';
-import TradesAnalysisPage from './pages/trades/TradesAnalysisPage';
-import WalletConnectError from './components/alerts/WalletConnectError';
+import Sidebar from "./components/sidebar/Sidebar";
+import Navbar from "./components/navbar/Navbar";
+import Home from "./pages/home/Home";
+import AppsPage from "./pages/apps/AppsPage";
+import AoClimaOptions from "./pages/climaOptions/AoClimaOptions";
+import AoWeatherAgent from "./pages/weatherAgent/AoWeatherAgent";
+import WalletPage from "./pages/wallet/WalletPage";
+import TradesAnalysisPage from "./pages/trades/TradesAnalysisPage";
+import WalletConnectError from "./components/alerts/WalletConnectError";
+import LeaderBoard from "./pages/leaderboard/leader";
 
 const App: React.FC = () => {
   const [theme, setTheme] = useState("");
@@ -42,7 +43,7 @@ const App: React.FC = () => {
   }, []);
 
   // Check if user has connected to Arweave Wallet
-  const walletAddress = localStorage.getItem('walletAddress');
+  const walletAddress = localStorage.getItem("walletAddress");
 
   return (
     <Router>
@@ -55,10 +56,32 @@ const App: React.FC = () => {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="apps" element={<AppsPage />} />
-            <Route path="analysis" element={walletAddress ? <TradesAnalysisPage /> : <WalletConnectError />} />
-            <Route path="wallet" element={walletAddress ? <WalletPage /> : <WalletConnectError />} />
-            <Route path="aoclimaoptions" element={walletAddress ? <AoClimaOptions /> : <WalletConnectError />} />
-            <Route path="aoweatheragent" element={walletAddress ? <AoWeatherAgent /> : <WalletConnectError />} />
+            <Route
+              path="analysis"
+              element={
+                walletAddress ? <TradesAnalysisPage /> : <WalletConnectError />
+              }
+            />
+            <Route
+              path="wallet"
+              element={walletAddress ? <WalletPage /> : <WalletConnectError />}
+            />
+            <Route
+              path="aoclimaoptions"
+              element={
+                walletAddress ? <AoClimaOptions /> : <WalletConnectError />
+              }
+            />
+            <Route
+              path="aoweatheragent"
+              element={
+                walletAddress ? <AoWeatherAgent /> : <WalletConnectError />
+              }
+            />
+            <Route
+              path="leaderboard"
+              element={walletAddress ? <LeaderBoard /> : <WalletConnectError />}
+            />
           </Routes>
         </div>
       </div>

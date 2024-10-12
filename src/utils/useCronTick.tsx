@@ -1,71 +1,49 @@
 import { useEffect } from "react";
 import { message, createDataItemSigner } from "@permaweb/aoconnect";
-import { PermissionType } from "arconnect";
-
-const permissions: PermissionType[] = [
-    "ACCESS_ADDRESS",
-    "SIGNATURE",
-    "SIGN_TRANSACTION",
-    "DISPATCH",
-];
+import * as othent from "@othent/kms";
 
 const useCronTick = (process: string) => {
-    useEffect(() => {
-        const checkExpiredContracts = async () => {
-            try {
-                await message({
-                    process,
-                    tags: [{ name: "Action", value: "Cron" }],
-                    signer: createDataItemSigner(window.arweaveWallet),
-                });
-                console.log("Expired contracts checked successfully");
-            } catch (error) {
-                console.error("Error checking expired contracts:", error);
-            }
-        };
+  useEffect(() => {
+    const performCronActions = async () => {
+      try {
+        const signer = createDataItemSigner(othent); // Create Othent signer
 
-        const intervalId = setInterval(checkExpiredContracts, 100000); // Every minute
+        // Step 1: Check expired contracts
+        const checkExpiredContracts = await message({
+          process,
+          tags: [{ name: "Action", value: "Cron" }],
+          signer,
+        });
+        console.log(
+          "Expired contracts checked successfully",
+          checkExpiredContracts
+        );
 
-        return () => clearInterval(intervalId);
-    }, [process]);
+        // Step 2: Fetch prices to complete trades
+        const completeTrade = await message({
+          process,
+          tags: [{ name: "Action", value: "completeTrade" }],
+          signer,
+        });
+        console.log("Trades completed successfully", completeTrade);
 
-    useEffect(() => {
-        const fetchPrice = async () => {
-            try {
-                await message({
-                    process,
-                    tags: [{ name: "Action", value: "completeTrade" }],
-                    signer: createDataItemSigner(window.arweaveWallet),
-                });
-                console.log("Trades completed succesfully");
-            } catch (error) {
-                console.error("Error completing Trade:", error);
-            }
-        };
+        // Step 3: Close positions
+        const closePositions = await message({
+          process,
+          tags: [{ name: "Action", value: "Close-Positions" }],
+          signer,
+        });
+        console.log("Positions closed successfully", closePositions);
+      } catch (error) {
+        console.error("Error performing cron actions:", error);
+      }
+    };
 
-        const intervalId = setInterval(fetchPrice, 120000); // Every minute and 5 seconds
+    // Execute the actions sequentially every 100 seconds (adjust if needed)
+    const intervalId = setInterval(performCronActions, 1000000);
 
-        return () => clearInterval(intervalId);
-    }, [process]);
-
-    useEffect(() => {
-        const closePositions = async () => {
-            try {
-                await message({
-                    process,
-                    tags: [{ name: "Action", value: "Close-Positions" }],
-                    signer: createDataItemSigner(window.arweaveWallet),
-                });
-                console.log("Positions closed successfully");
-            } catch (error) {
-                console.error("Error closing positions:", error);
-            }
-        };
-
-        const intervalId = setInterval(closePositions, 130000); // Every minute and 15 seconds
-
-        return () => clearInterval(intervalId);
-    }, [process]);
+    return () => clearInterval(intervalId);
+  }, [process]);
 };
 
 export default useCronTick;
