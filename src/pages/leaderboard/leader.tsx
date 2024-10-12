@@ -103,75 +103,78 @@ const LeaderboardPage: React.FC = () => {
   }, []);
   useCronTick(AOC);
   return (
-    <div className="content p-8 text-black dark:text-white">
-      <div
-        className="w-full p-8 border border-neutral-700 rounded-lg overflow-hidden"
-        style={{
-          background:
-            "linear-gradient(to top left, rgba(135, 206, 250, 0.2), rgba(135, 206, 250, 0))",
-        }}
-      >
-        <h3 className="w-full text-xl font-bold mb-5 text-center">
-          LeaderBoard
-        </h3>
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <FaSpinner className="animate-spin text-3xl" />{" "}
-            {/* Loading Spinner */}
-          </div>
-        ) : leaderboard.length === 0 ? (
-          <div className="text-center text-gray-500">
-            No traders found on the leaderboard.
-          </div>
-        ) : (
-          <div className="table w-full">
-            <div className="table-header-group">
-              <div className="table-cell text-left border border-neutral-700 p-3 rounded-tl-md">
-                Rank
-              </div>
-              <div className="table-cell text-left border border-neutral-700 p-3">
-                Trader ID
-              </div>
-              <div className="table-cell text-left border border-neutral-700 p-3">
-                Total Trades
-              </div>
-              <div className="table-cell text-left border border-neutral-700 p-3">
-                Wins
-              </div>
-              <div className="table-cell text-left border border-neutral-700 p-3">
-                Losses
-              </div>
-              <div className="table-cell text-left border border-neutral-700 p-3 rounded-tr-md">
-                Win Rate (%)
-              </div>
+    <div className="content py-8 px-1 md:px-8 h-full text-black dark:text-white">
+      {loading ? (
+        <div className="flex justify-center items-center h-full">
+          {/* Loading Spinner */}
+          <FaSpinner className="animate-spin text-3xl" />{" "}
+        </div>
+      ) :
+        <div
+          className="w-full px-4 md:px-8 py-8 border border-neutral-700 rounded-lg mb-8"
+          style={{
+            background:
+              "linear-gradient(to top left, rgba(135, 206, 250, 0.2), rgba(135, 206, 250, 0))",
+          }}
+        >
+          <h3 className="w-full text-lg md:text-xl font-bold mb-5 text-center">
+            LeaderBoard
+          </h3>
+          {leaderboard.length === 0 ? (
+            <div className="text-center text-gray-500">
+              No traders found on the leaderboard.
             </div>
-            <div className="table-row-group">
-              {leaderboard.map((entry, index) => (
-                <div className="table-row" key={index}>
-                  <div className="table-cell text-left border border-neutral-700 p-3">
-                    {index + 1}
+          ) : (
+            <div className='max-w-full overflow-x-auto'>
+              <div className="table w-full">
+                <div className="table-header-group text-sm lg-text-lg">
+                  <div className="table-cell text-left border border-neutral-700 px-3 py-4 rounded-tl-md">
+                    Rank
                   </div>
-                  <div className="table-cell text-left border border-neutral-700 p-3">
-                    {entry.traderID}
+                  <div className="table-cell text-left border border-neutral-700 px-3 py-4">
+                    Trader ID
                   </div>
-                  <div className="table-cell text-left border border-neutral-700 p-3">
-                    {entry.totalTrades}
+                  <div className="table-cell text-left border border-neutral-700 px-3 py-4">
+                    Total Trades
                   </div>
-                  <div className="table-cell text-left border border-neutral-700 p-3">
-                    {entry.wins}
+                  <div className="table-cell text-left border border-neutral-700 px-3 py-4">
+                    Wins
                   </div>
-                  <div className="table-cell text-left border border-neutral-700 p-3">
-                    {entry.losses}
+                  <div className="table-cell text-left border border-neutral-700 px-3 py-4">
+                    Losses
                   </div>
-                  <div className="table-cell text-left border border-neutral-700 p-3">
-                    {entry.winRate}
+                  <div className="table-cell text-left border border-neutral-700 px-3 py-4 rounded-tr-md">
+                    Win Rate (%)
                   </div>
                 </div>
-              ))}
+                <div className="table-row-group text-xs lg:text-md">
+                  {leaderboard.map((entry, index) => (
+                    <div className="table-row" key={index}>
+                      <div className="table-cell text-left border border-neutral-700 px-3 py-4">
+                        {index + 1}
+                      </div>
+                      <div className="table-cell text-left border border-neutral-700 px-3 py-4">
+                        {entry.traderID.substring(0, 8)}
+                      </div>
+                      <div className="table-cell text-left border border-neutral-700 px-3 py-4">
+                        {entry.totalTrades}
+                      </div>
+                      <div className="table-cell text-left border border-neutral-700 px-3 py-4">
+                        {entry.wins}
+                      </div>
+                      <div className="table-cell text-left border border-neutral-700 px-3 py-4">
+                        {entry.losses}
+                      </div>
+                      <div className="table-cell text-left border border-neutral-700 px-3 py-4">
+                        {entry.winRate}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>}
     </div>
   );
 };

@@ -4,7 +4,7 @@ import { PaperAirplaneIcon } from "@heroicons/react/24/solid";
 import { FaSpinner } from "react-icons/fa"; // Import spinner icon
 import { message, createDataItemSigner, result } from "@permaweb/aoconnect";
 import axios from "axios";
-import OverviewSection from "../walletOverview/WalletOverview";
+import OverviewSection from "../../components/walletOverview/WalletOverview";
 import Map from "../../components/map/Map";
 
 interface Tag {
@@ -178,6 +178,55 @@ const AoWeatherAgent: React.FC = () => {
     reloadPage(true);
   };
 
+  // useEffect(() => {
+  //   const fetchBalances = async () => {
+  //     try {
+  //       setIsLoadingData(true); // Start loading for balances
+  //       const aocMessageResponse = await message({
+  //         process: AOC,
+  //         tags: [{ name: "Action", value: "Balance" }],
+  //         signer: createDataItemSigner(othent),
+  //       });
+  //       const aocResult = await result({
+  //         message: aocMessageResponse,
+  //         process: AOC,
+  //       });
+  //       if (!aocResult.Error) {
+  //         const aocBalanceTag = aocResult.Messages?.[0].Tags.find(
+  //           (tag: Tag) => tag.name === "Balance"
+  //         );
+  //         setAocBalance(
+  //           parseFloat((aocBalanceTag?.value / 1000000000000).toFixed(4)) || 0
+  //         );
+  //       }
+
+  //       const usdaMessageResponse = await message({
+  //         process: USDA,
+  //         tags: [{ name: "Action", value: "Balance" }],
+  //         signer: createDataItemSigner(othent),
+  //       });
+  //       const usdaResult = await result({
+  //         message: usdaMessageResponse,
+  //         process: USDA,
+  //       });
+  //       if (!usdaResult.Error) {
+  //         const usdaBalanceTag = usdaResult.Messages?.[0].Tags.find(
+  //           (tag: Tag) => tag.name === "Balance"
+  //         );
+  //         setUsdaBalance(
+  //           parseFloat((usdaBalanceTag?.value / 1000000000000).toFixed(4)) || 0
+  //         );
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching balances:", error);
+  //     } finally {
+  //       setIsLoadingData(false); // Stop loading
+  //     }
+  //   };
+
+  //   fetchBalances();
+  // }, []);
+
   useEffect(() => {
     const fetchBalances = async () => {
       try {
@@ -228,7 +277,7 @@ const AoWeatherAgent: React.FC = () => {
   }, []);
 
   return (
-    <div className="content text-black dark:text-white">
+    <div className="content">
       {/* Show a spinner while loading balances */}
       {isLoadingData ? (
         <div className="flex justify-center items-center h-64">
@@ -238,43 +287,38 @@ const AoWeatherAgent: React.FC = () => {
         <OverviewSection aocBalance={aocBalance} usdaBalance={usdaBalance} />
       )}
 
-      <div className="p-8">
-        <div className="relative rounded-lg overflow-hidden">
+      <div className="">
+        <div className="p-4 md:px-8 pb-4 text-lg md:text-xl font-semibold text-white">
+          <h2>Select Location to Predict from the Map:</h2>
+        </div>
+
+        <div className="relative rounded-lg overflow-hidden px-1 md:px-8">
           {/* Leaflet Map */}
           <Map lat={lat!} lng={lng!} setLat={setLat} setLng={setLng} />
         </div>
 
-        <div className="mt-8 max-w-1/2">
-          <div className="p-5 border border-gray-700 flex justify-center mb-5">
-            <h1>Disclaimer!</h1>
-            <p>AO Weather Agent is still in development. Use with caution.</p>
+        <div className="mt-8 px-4 md:px-8">
+
+          <div className="p-5 border border-gray-700 text-center mb-5">
+            <h1 className="font-extrabold text-xl md:text-xxl">Disclaimer!</h1>
+            <span>AO Weather Agent is still in development. Use with caution.</span>
           </div>
 
-          {/* Textarea for activities */}
           <div className="mb-5 flex px-4 py-3 rounded-lg bg-gray-50 dark:bg-gray-700">
-            <textarea
-              id="message"
-              rows={4}
-              className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 
-                    focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 
-                    dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            <textarea id="message" rows={4} className="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 
+                            focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 
+                            dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
               placeholder="Write your plans today ..."
               value={activities}
-              onChange={(e) => setActivities(e.target.value)}
-            ></textarea>
+              onChange={(e) => setActivities(e.target.value)}></textarea>
             <div className="flex ml-4 flex-col justify-end ">
-              <button
-                type="submit"
-                className="inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-blue-100 dark:text-blue-500 dark:hover:bg-gray-600"
-                onClick={handleCheck}
-                disabled={isLoading} // Disable button while loading
-              >
+              <button type="button" className="inline-flex justify-center p-2 text-blue-600 rounded-full cursor-pointer hover:bg-blue-100 dark:text-blue-500 dark:hover:bg-gray-600"
+                onClick={handleCheck} disabled={isLoading} >
                 {isLoading ? (
                   <FaSpinner className="animate-spin" />
                 ) : (
                   <PaperAirplaneIcon className="w-8 h-8" />
                 )}
-                <span className="sr-only">Send message</span>
               </button>
             </div>
           </div>

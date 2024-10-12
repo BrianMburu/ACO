@@ -39,128 +39,73 @@ interface TradeDetails {
   City: string;
 }
 
-const TradesTable: React.FC<{ trades: Trade[]; tabletype: string }> = ({
-  trades,
-  tabletype,
-}) => {
+const TradesTable: React.FC<{ trades: Trade[], tabletype: string }> = ({ trades, tabletype }) => {
   return (
-    <div
-      className="w-full p-8 border border-neutral-700 rounded-lg mb-8"
-      style={{
-        background:
-          tabletype === "open"
-            ? "linear-gradient(to top left, rgba(135, 206, 250, 0.2), rgba(135, 206, 250, 0))"
-            : tabletype === "close"
-            ? "linear-gradient(to top left, rgba(250, 178, 133, 0.2), rgba(135, 206, 250, 0))"
-            : "linear-gradient(to top left, rgba(169, 169, 169, 0.2), rgba(135, 206, 250, 0))",
-      }}
-    >
-      <h3 className="w-full text-xl font-bold mb-5 text-center">
+    <div className='w-full px-4 md:px-8 py-8 border border-neutral-700 rounded-lg mb-8' style={{
+      background: tabletype === "open" ?
+        "linear-gradient(to top left, rgba(135, 206, 250, 0.2), rgba(135, 206, 250, 0))" :
+        tabletype === "close" ?
+          "linear-gradient(to top left, rgba(250, 178, 133, 0.2), rgba(135, 206, 250, 0))" :
+          "linear-gradient(to top left, rgba(169, 169, 169, 0.2), rgba(135, 206, 250, 0))",
+    }}>
+      <h3 className="w-full text-lg md:text-xl font-bold mb-5 text-center">
         {tabletype === "open"
           ? "Open Trades"
           : tabletype === "close"
-          ? "Closed Trades"
-          : "Archived Trades"}
+            ? "Closed Trades"
+            : "Archived Trades"}
       </h3>
-      {trades.length === 0 ? (
+      {trades.length === 0 ?
         <div className="text-center text-gray-500">
           No{" "}
-          {tabletype === "open"
-            ? "Open"
-            : tabletype === "close"
-            ? "Closed"
-            : "Archived"}{" "}
+          {tabletype === "open" ? "Open" :
+            tabletype === "close" ? "Closed" : "Archived"}
+          {" "}
           Trades Available.
         </div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="min-w-full table-auto border-collapse border border-neutral-700">
-            <thead>
-              <tr>
-                <th className="px-4 py-2 border border-neutral-700">
-                  ProcessId
-                </th>
-                <th className="px-4 py-2 border border-neutral-700">Country</th>
-                <th className="px-4 py-2 border border-neutral-700">City</th>
-                <th className="px-4 py-2 border border-neutral-700">
-                  Bought Temp
-                </th>
-                <th className="px-4 py-2 border border-neutral-700">
-                  Closing Temp
-                </th>
-                <th className="px-4 py-2 border border-neutral-700">
-                  Contract Type
-                </th>
-                <th className="px-4 py-2 border border-neutral-700">
-                  Trade Amount
-                </th>
-                <th className="px-4 py-2 border border-neutral-700">
-                  Created Time
-                </th>
-                <th className="px-4 py-2 border border-neutral-700">
-                  Contract Expiry
-                </th>
-                <th className="px-4 py-2 border border-neutral-700">
-                  Contract Status
-                </th>
-                <th className="px-4 py-2 border border-neutral-700">
-                  Closing Time
-                </th>
-                <th className="px-4 py-2 border border-neutral-700">Payout</th>
-                <th className="px-4 py-2 border border-neutral-700">Outcome</th>
-              </tr>
-            </thead>
-            <tbody>
+        :
+        <div className='max-w-full overflow-x-auto'>
+          <div className='w-full table '>
+            <div className='table-header-group text-sm lg-text-lg'>
+              <div className='table-cell text-left border border-neutral-700 px-3 py-4 rounded-tl-md'>ProcessId</div>
+              <div className='table-cell text-left border border-neutral-700 px-3 py-4'>Country</div>
+              <div className='table-cell text-left border border-neutral-700 px-3 py-4'>City</div>
+              <div className='table-cell text-left border border-neutral-700 px-3 py-4'>Bought Temp</div>
+              <div className='table-cell text-left border border-neutral-700 px-3 py-4'>Closing Temp</div>
+              <div className='table-cell text-left border border-neutral-700 px-3 py-4'>Contract Type</div>
+              <div className='table-cell text-left border border-neutral-700 px-3 py-4'>Trade Amount</div>
+              <div className='table-cell text-left border border-neutral-700 px-3 py-4'>Created Time</div>
+              <div className='table-cell text-left border border-neutral-700 px-3 py-4'>Contract Expiry</div>
+              <div className='table-cell text-left border border-neutral-700 px-3 py-4'>Contract Status</div>
+              <div className='table-cell text-left border border-neutral-700 px-3 py-4'>Closing Time</div>
+              <div className='table-cell text-left border border-neutral-700 px-3 py-4'>Payout</div>
+              <div className='table-cell text-left border border-neutral-700 px-3 py-4 rounded-tr-md'>Outcome</div>
+            </div>
+            <div className='table-row-group text-xs lg:text-md'>
               {trades.map((trade: Trade, index: number) => (
-                <tr key={index} className="bg-gray-100 dark:bg-gray-800">
-                  <td className="px-4 py-2 border border-neutral-700">
-                    {trade.UserId.substring(0, 8)}
-                  </td>
-                  <td className="px-4 py-2 border border-neutral-700">
-                    {trade.Country}
-                  </td>
-                  <td className="px-4 py-2 border border-neutral-700">
-                    {trade.City}
-                  </td>
-                  <td className="px-4 py-2 border border-neutral-700">
-                    {trade.CurrentTemp}
-                  </td>
-                  <td className="px-4 py-2 border border-neutral-700">
-                    {trade.ClosingTemp || "Pending"}
-                  </td>
-                  <td className="px-4 py-2 border border-neutral-700">
-                    {trade.ContractType}
-                  </td>
-                  <td className="px-4 py-2 border border-neutral-700">
-                    {trade.BetAmount}
-                  </td>
-                  <td className="px-4 py-2 border border-neutral-700">
-                    {trade.CreatedTime}
-                  </td>
-                  <td className="px-4 py-2 border border-neutral-700">
-                    {trade.ContractExpiry}
-                  </td>
-                  <td className="px-4 py-2 border border-neutral-700">
-                    {trade.ContractStatus}
-                  </td>
-                  <td className="px-4 py-2 border border-neutral-700">
-                    {trade.ClosingTime || "Pending"}
-                  </td>
-                  <td className="px-4 py-2 border border-neutral-700">
-                    {trade.Payout}
-                  </td>
-                  <td className="px-4 py-2 border border-neutral-700">
-                    {trade.Outcome}
-                  </td>
-                </tr>
+                <div className='table-row' key={index}>
+                  <div className='table-cell text-left border border-neutral-700 px-3 py-4'>{trade.UserId.substring(0, 8)}</div>
+                  <div className='table-cell text-left border border-neutral-700 px-3 py-4'>{trade.Country}</div>
+                  <div className='table-cell text-left border border-neutral-700 px-3 py-4'>{trade.City}</div>
+                  <div className='table-cell text-left border border-neutral-700 px-3 py-4'>{trade.CurrentTemp}</div>
+                  <div className='table-cell text-left border border-neutral-700 px-3 py-4'>{trade.ClosingTemp}</div>
+                  <div className='table-cell text-left border border-neutral-700 px-3 py-4'>{trade.ContractType}</div>
+                  <div className='table-cell text-left border border-neutral-700 px-3 py-4'>{trade.BetAmount}</div>
+                  <div className='table-cell text-left border border-neutral-700 px-3 py-4'>{trade.CreatedTime}</div>
+                  <div className='table-cell text-left border border-neutral-700 px-3 py-4'>{trade.ContractExpiry}</div>
+                  <div className='table-cell text-left border border-neutral-700 px-3 py-4'>{trade.ContractStatus}</div>
+                  <div className='table-cell text-left border border-neutral-700 px-3 py-4'>{trade.ClosingTime}</div>
+                  <div className='table-cell text-left border border-neutral-700 px-3 py-4'>{trade.Payout}</div>
+                  <div className='table-cell text-left border border-neutral-700 px-3 py-4'>{trade.Outcome}</div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          </div>
         </div>
-      )}
+      }
     </div>
   );
-};
+}
 
 const TradesAnalysisPage: React.FC = () => {
   interface Tag {
@@ -223,13 +168,13 @@ const TradesAnalysisPage: React.FC = () => {
               ),
               ClosingTime: typedDetails.ClosingTime
                 ? new Date(typedDetails.ClosingTime).toLocaleString("en-US", {
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: false,
-                  })
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                })
                 : "Pending",
             };
           });
@@ -279,13 +224,13 @@ const TradesAnalysisPage: React.FC = () => {
                 ),
                 ClosingTime: typedDetails.ClosingTime
                   ? new Date(typedDetails.ClosingTime).toLocaleString("en-US", {
-                      year: "numeric",
-                      month: "2-digit",
-                      day: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: false,
-                    })
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  })
                   : "Pending",
               };
             }
@@ -336,13 +281,13 @@ const TradesAnalysisPage: React.FC = () => {
                 ),
                 ClosingTime: typedDetails.ClosingTime
                   ? new Date(typedDetails.ClosingTime).toLocaleString("en-US", {
-                      year: "numeric",
-                      month: "2-digit",
-                      day: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      hour12: false,
-                    })
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                  })
                   : "Pending",
               };
             }
@@ -361,9 +306,9 @@ const TradesAnalysisPage: React.FC = () => {
   }, []);
 
   return (
-    <div className="container mx-auto p-8">
+    <div className="content py-8 h-full  px-1 md:px-8 text-black dark:text-white">
       {loading ? (
-        <div className="flex justify-center items-center h-64">
+        <div className="flex flex-col justify-center items-center h-full">
           <FaSpinner className="animate-spin text-3xl" />{" "}
           {/* Loading Spinner */}
         </div>

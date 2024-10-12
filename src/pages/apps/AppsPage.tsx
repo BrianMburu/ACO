@@ -162,10 +162,10 @@ const AppsPage: React.FC = () => {
             selectedTimeRange === "daily"
               ? "hour"
               : selectedTimeRange === "weekly"
-              ? "day"
-              : selectedTimeRange === "monthly"
-              ? "week"
-              : "month",
+                ? "day"
+                : selectedTimeRange === "monthly"
+                  ? "week"
+                  : "month",
           tooltipFormat: "PPpp",
         },
         grid: {
@@ -262,71 +262,51 @@ const AppsPage: React.FC = () => {
 
   // console.log(getChartData())
   return (
-    <div
-      className={classNames("content text-black dark:text-white flex flex-col")}
-    >
-      <div className="grid grid-cols-1 p-8 lg:grid-cols-3 md:grid-cols-2 gap-6">
+    <div className={classNames("content text-black dark:text-white flex flex-col")}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 p-4 md:p-8 gap-6">
         {/* First Card - Temperature Graph */}
-        <div
-          className="shadow-lg rounded-lg p-6 border border-neutral-700"
-          style={{
-            background:
-              "linear-gradient(to top left, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0))",
-          }}
-        >
-          <div className="mb-4 flex justify-between">
+        <div className="shadow-lg rounded-lg p-0 md:p-6 border border-neutral-700" style={{
+          background: 'linear-gradient(to top left, rgba(255, 215, 0, 0.2), rgba(255, 215, 0, 0))'
+        }}>
+
+          <div className='mb-4 px-4 pt-4 md:p-0 flex justify-between'>
             <div>
               <h2 className="text-xl font-semibold mb-1">AoClimaOptions</h2>
-              <h6 className="text-xs text-gray-700 dark:text-gray-400">
+              <h6 className='text-xs text-gray-700 dark:text-gray-400'>
                 {"Temparature Overview"}
               </h6>
             </div>
-            <div className="rounded-full p-3 bg-gradient-to-b from-neutral-700 to-transparent">
-              <CubeTransparentIcon className="size-6" />
+            <div className='rounded-full p-3 bg-gradient-to-b from-neutral-700 to-transparent'>
+              <CubeTransparentIcon className='size-6' />
             </div>
           </div>
-          <div className="flex justify-between">
-            <div className="flex text-xs space-x-2 mb-5">
-              <button
-                className={classNames(
-                  "cursor-pointer rounded-lg text-sm p-1 text-center dark:text-text-white dark:hover:text-white dark:hover:bg-yellow-500 dark:focus:ring-yellow-900",
-                  { "bg-yellow-500": selectedTimeRange === "weekly" }
-                )}
-                onClick={() => setSelectedTimeRange("weekly")}
-              >
-                Weekly
-              </button>
-              <button
-                className={classNames(
-                  "cursor-pointer rounded-lg text-sm p-1 text-center dark:text-white dark:hover:text-white dark:hover:bg-yellow-500 dark:focus:ring-yellow-900",
-                  { "bg-yellow-500": selectedTimeRange === "monthly" }
-                )}
-                onClick={() => setSelectedTimeRange("monthly")}
-              >
-                Monthly
-              </button>
+          <div className='flex px-4 md:p-0 justify-between'>
+            <div className='flex text-xs space-x-2 mb-5'>
+              <button className={classNames('cursor-pointer rounded-lg text-sm p-1 text-center dark:text-text-white dark:hover:text-white dark:hover:bg-yellow-500 dark:focus:ring-yellow-900',
+                { "bg-yellow-500": selectedTimeRange === "weekly" }
+              )}
+                onClick={() => setSelectedTimeRange("weekly")}>Weekly</button>
+              <button className={classNames('cursor-pointer rounded-lg text-sm p-1 text-center dark:text-white dark:hover:text-white dark:hover:bg-yellow-500 dark:focus:ring-yellow-900',
+                { "bg-yellow-500": selectedTimeRange === "monthly" }
+              )}
+                onClick={() => setSelectedTimeRange("monthly")}>Monthly</button>
             </div>
-            <div className="text-xs mb-5 p-1">{weatherData?.name}</div>
+            <div className='text-xs mb-5 p-1'>
+              {weatherData?.name}
+            </div>
           </div>
 
-          <div className="h-64 lg:h-auto md:h-auto">
-            {chartData && (
-              <Line data={getChartData()!} options={chartOptions} />
-            )}
+          <div className="h-64 md:h-auto px-1 md:p-0 ">
+            {chartData && <Line data={getChartData()!}
+              options={chartOptions} />}
           </div>
-          <div className="mt-4 flex justify-between">
+          <div className="mt-4 px-4 pb-4 md:p-0 flex justify-between">
             <div>
-              <span className="text-gray-600 dark:text-gray-400 text-sm">
-                Current Temp
-              </span>
-              <h3 className="text-md font-bold">
-                {weatherData?.main.temp ?? "..."} °C
-              </h3>
+              <span className="text-gray-600 dark:text-gray-400 text-sm">Current Temp</span>
+              <h3 className="text-md font-bold">{weatherData?.main.temp ?? '...'} °C</h3>
             </div>
-            <div className="flex flex-col justify-center">
-              <button
-                type="button"
-                className="text-yellow-400 hover:text-white border border-yellow-400 hover:bg-yellow-700 focus:ring-4 
+            <div className='flex flex-col justify-center'>
+              <button type="button" className="text-yellow-400 hover:text-white border border-yellow-400 hover:bg-yellow-700 focus:ring-4 
                             focus:outline-none focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:border-yellow-300 
                             dark:text-yellow-300 dark:hover:text-white dark:hover:bg-yellow-500 dark:focus:ring-yellow-900"
                 onClick={() => navigate("/aoclimaoptions")}
